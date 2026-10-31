@@ -51,7 +51,7 @@ jobs:
             echo "- SHA-256：$(sha256sum DiPlay0.3.3.apk | awk '{print $1}')"
             echo
             echo '## APK 文件结构'
-            unzip -l DiPlay0.3.3.apk | head -100
+            unzip -l DiPlay0.3.3.apk | head -100 || true
             echo
             echo '## Manifest 身份、组件和权限'
             python3 - <<'PY'
@@ -88,7 +88,7 @@ jobs:
             grep -RInE -m 300 'hostapd|热点|蓝牙|Bluetooth|CarPlay|Android Auto|Wi.?Fi|WifiManager|tether|APN|socket|TLS|WebSocket|github\.com|gitlab\.com|https?://' decoded decompiled 2>/dev/null | head -300 || true
             echo
             echo '## DEX 类名线索'
-            find decompiled -type f -name '*.java' 2>/dev/null | sed 's#^decompiled/##' | head -500
+            find decompiled -type f -name '*.java' 2>/dev/null | sed 's#^decompiled/##' | head -500 || true
           } > report/DiPlay0.3.3-analysis.md
           cp decoded/AndroidManifest.xml report/AndroidManifest.xml
           find DiPlay0.3.3.apk -maxdepth 0 -type f -exec file {} \; > report/file-type.txt
