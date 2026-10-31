@@ -108,6 +108,24 @@ jobs:
             cp -a bt-decompiled report/bt-decompiled
           fi
           find DiPlay0.3.3.apk -maxdepth 0 -type f -exec file {} \; > report/file-type.txt
+          # Preserve original APK, decoded resources/assets/native libs and raw DEX.
+          mkdir -p report/original-apk report/apktool-decoded report/raw-dex
+          cp DiPlay0.3.3.apk report/original-apk/
+          cp -a decoded/. report/apktool-decoded/
+          unzip -j -o DiPlay0.3.3.apk 'classes*.dex' -d report/raw-dex >/dev/null
+          if [ -f decoded/assets/hotspot/bt.dex ]; then
+            mkdir -p report/raw-dex/assets-hotspot
+            cp decoded/assets/hotspot/bt.dex report/raw-dex/assets-hotspot/
+          fi
+          {
+            echo '# 完整逆向工程包说明'
+            echo '- original-apk/: 原始 APK'
+            echo '- apktool-decoded/: 完整解包资源、assets、lib、Manifest'
+            echo '- raw-dex/: 原始 classes*.dex 和 bt.dex'
+            echo '- decompiled-sources/: JADX Java 反编译源码'
+            echo '- bt-decompiled-sources/: bt.dex 反编译源码'
+            echo '注意：这不是开发者原始 Gradle 工程；反编译可能不完整，.so 保留为二进制。'
+          } > report/README-完整逆向工程包.md
 
       - name: Upload source and analysis report
         uses: actions/upload-artifact@v4
