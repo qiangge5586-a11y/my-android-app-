@@ -13,7 +13,7 @@ permissions:
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,8 +38,11 @@ jobs:
           chmod +x tools/jadx/bin/jadx
           java -jar tools/apktool.jar d -f -s DiPlay0.3.3.apk -o decoded
           tools/jadx/bin/jadx --no-res --show-bad-code -d decompiled DiPlay0.3.3.apk || true
+          if [ -f decoded/assets/hotspot/bt.dex ]; then
+            tools/jadx/bin/jadx --show-bad-code -d bt-decompiled decoded/assets/hotspot/bt.dex || true
+          fi
 
-      - name: Generate identification report
+      - name: Generate report and package reconstructed source
         shell: bash
         run: |
           set -eu
@@ -74,7 +77,7 @@ jobs:
                       print(tag+':',x.attrib.get(A+'name'), 'exported='+str(x.attrib.get(A+'exported')))
           PY
             echo
-            echo '## 签名证书文件'
+            echo '## 签名证书'
             unzip -Z1 DiPlay0.3.3.apk | grep -Ei '^META-INF/.*\.(RSA|DSA|EC)$' || true
             mkdir -p certs
             unzip -j -o DiPlay0.3.3.apk 'META-INF/*.RSA' 'META-INF/*.DSA' 'META-INF/*.EC' -d certs >/dev/null 2>&1 || true
@@ -84,18 +87,31 @@ jobs:
               keytool -printcert -file "$f" 2>&1 || true
             done
             echo
-            echo '## 源码/资源中的关键特征与 URL'
-            grep -RInE -m 300 'hostapd|热点|蓝牙|Bluetooth|CarPlay|Android Auto|Wi.?Fi|WifiManager|tether|APN|socket|TLS|WebSocket|github\.com|gitlab\.com|https?://' decoded decompiled 2>/dev/null | head -300 || true
+            echo '## 反编译 Java 文件统计'
+            find decompiled bt-decompiled -type f -name '*.java' 2>/dev/null | wc -l || true
+            echo
+            echo '## 源码关键特征与 URL'
+            grep -RInE -m 300 'hostapd|热点|蓝牙|Bluetooth|CarPlay|Android Auto|WifiManager|tether|socket|TLS|WebSocket|github\.com|gitlab\.com|https?://' decoded decompiled bt-decompiled 2>/dev/null | head -300 || true
             echo
             echo '## DEX 类名线索'
-            find decompiled -type f -name '*.java' 2>/dev/null | sed 's#^decompiled/##' | head -500 || true
+            find decompiled bt-decompiled -type f -name '*.java' 2>/dev/null | sed -e 's#^decompiled/##' -e 's#^bt-decompiled/##' | head -1000 || true
           } > report/DiPlay0.3.3-analysis.md
           cp decoded/AndroidManifest.xml report/AndroidManifest.xml
+          if [ -d decompiled/sources ]; then
+            cp -a decompiled/sources report/decompiled-sources
+          elif [ -d decompiled ]; then
+            cp -a decompiled report/decompiled
+          fi
+          if [ -d bt-decompiled/sources ]; then
+            cp -a bt-decompiled/sources report/bt-decompiled-sources
+          elif [ -d bt-decompiled ]; then
+            cp -a bt-decompiled report/bt-decompiled
+          fi
           find DiPlay0.3.3.apk -maxdepth 0 -type f -exec file {} \; > report/file-type.txt
 
-      - name: Upload static analysis report
+      - name: Upload source and analysis report
         uses: actions/upload-artifact@v4
         with:
-          name: diplay-0.3.3-static-analysis
+          name: diplay-0.3.3-decompiled-source
           path: report/
           retention-days: 14
