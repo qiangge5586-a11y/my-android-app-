@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y unzip zipinfo file
+          sudo apt-get install -y unzip file
           mkdir -p tools report
           curl -fL --retry 3 -o tools/apktool.jar https://github.com/iBotPeaches/Apktool/releases/download/v2.10.0/apktool_2.10.0.jar
           curl -fL --retry 3 -o tools/jadx.zip https://github.com/skylot/jadx/releases/download/v1.5.1/jadx-1.5.1.zip
