@@ -1,6 +1,6 @@
 # DiPlay v0.3.3 Root Hotspot Hardening
 
-> Status: reverse-engineering baseline and implementation specification. This document does **not** claim that the APK has been patched or rebuilt.
+> Status: a patched APK has been rebuilt and signature-verified in GitHub Actions. It is **not yet validated on the actual Civic head unit**; build success is not a claim of working on-device hotspot operation.
 
 ## Scope and compatibility invariants
 
@@ -28,8 +28,9 @@ The current implementation has several unsafe cleanup behaviors that must be cor
 2. The same cleanup removes global `/data/local/tmp/dnsmasq.pid` and `dnsmasq.leases`, which may belong to another session.
 3. `removeGeneratedFilesScript()` unconditionally removes `/data/misc/wifi/hostapd.conf`, a shared system Wi-Fi configuration path.
 4. `startHotspot()` copies a generated config over that shared path, then brings `wlan0` down before starting hostapd.
-5. `teardown()` includes `svc wifi disable`, which can disrupt unrelated system Wi-Fi state.
-6. Current readiness checks do not distinguish AP readiness, DHCP readiness, phone lease, and the CarPToCarL application session.
+5. `startHotspot()` records the prior framework Wi-Fi state. It issues `svc wifi disable` only when Wi-Fi was previously on; `teardown()` issues `svc wifi enable` only when that recorded state was on. This temporary radio handoff is part of the current SoftAP strategy and must be tested on the Civic. It must not be replaced with unconditional disable/enable.
+6. `teardown()` also brings `wlan0` down before restoring the previous framework Wi-Fi state. This ordering remains a device-validation point.
+7. Current readiness checks do not distinguish AP readiness, DHCP readiness, phone lease, and the CarPToCarL application session.
 
 ## Required implementation changes
 
@@ -86,8 +87,26 @@ Do not report a complete connection based only on `AP_READY`. Include a bounded 
 7. The generated hostapd config remains 2.4 GHz (`hw_mode=g`) and the tested IP/DHCP/WPA2 contract remains intact.
 8. Test on the actual head unit and phone before distributing a rebuilt APK.
 
-## Build and source status
+## Implemented bytecode changes and build status
 
-The repository currently contains the original APK and a GitHub Actions workflow that decompiles it for analysis. It does not contain the developer's original Gradle/Kotlin/Java project. JADX output is reconstructed source and may be incomplete; it is not equivalent to the original project.
+The repository does not contain the developer's original Gradle/Kotlin/Java project. JADX output is reconstructed source, so the current implementation is a narrowly scoped Smali patch against the exact supplied v0.3.3 APK.
 
-Therefore, this branch is the tracked hardening specification and analysis baseline. No APK bytecode has been changed, no APK has been rebuilt, and no installable replacement is produced by this commit. The next implementation step is to use the generated reverse-engineering artifact to identify the exact smali methods and apply/test narrowly scoped bytecode patches, or obtain the original v0.3.3 source project for a maintainable source-level fix.
+The GitHub Actions build has completed successfully once. It decoded the supplied APK with Apktool, patched `HostapdConfig` and `HostapdHotspotManager` Smali, rebuilt, zip-aligned, signed, and signature-verified the APK, and packaged the patched APK plus reverse-engineering output as a workflow artifact.
+
+The current patch:
+- namespaces DiPlay PID, log, lease, and staged-config paths under `/data/local/tmp/diplay-root-hotspot`;
+- associates hostapd/dnsmasq with a per-run session ID, PID, and `/proc` start time;
+- uses bounded TERM followed by identity-checked KILL for only recorded DiPlay-owned processes;
+- disables the old global `wpa_supplicant` kill command;
+- backs up `/data/misc/wifi/hostapd.conf` and restores it only if its content hash still matches the file written by this session;
+- retains 2.4 GHz-only configuration, `wlan0`, gateway `192.168.42.1`, DHCP pool `192.168.42.10-192.168.42.50`, WPA2/CCMP, and eight-client limit;
+- preserves conditional Wi-Fi radio handoff: disable framework Wi-Fi only if it was on before start, then re-enable only in that same case during teardown.
+
+**Important remaining risks / not yet verified:**
+1. The `wlan0` down/up and framework Wi-Fi restoration sequence must be tested on the actual 2019 Civic head unit. Android vendor Wi-Fi drivers differ; an APK build cannot prove driver support or successful hostapd startup.
+2. The exact hostapd binary's support for `-P` PID-file mode must be confirmed on the head unit.
+3. DHCP lease acquisition and phone reconnect have not yet been verified.
+4. CarPToCarL's application-level session handshake is not proven by DiPlay's AP-ready state.
+5. The rebuilt APK uses a test signing key, not the original developer key. It may not install as an in-place update over the original app; back up DiPlay settings/data before considering uninstall/reinstall.
+
+The previous Actions run (run ID `41267603857`) completed successfully, but the generated artifact is only a build artifact and has not passed physical-device acceptance tests. The next release gate is on-device diagnostics, not another speculative feature change.
