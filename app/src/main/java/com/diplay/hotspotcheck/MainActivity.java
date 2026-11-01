@@ -170,19 +170,60 @@ public class MainActivity extends Activity {
     }
 
     private String runSu(String command) {
-        StringBuilder out = new StringBuilder();
+        final StringBuilder out = new StringBuilder();
         Process p = null;
+        Thread reader = null;
         try {
             p = new ProcessBuilder("su", "-c", command).redirectErrorStream(true).start();
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            long until = System.currentTimeMillis() + 20000;
-            while (System.currentTimeMillis() < until && (line = br.readLine()) != null) out.append(line).append('\n');
-            out.append("[su exit=").append(p.waitFor()).append("]\n");
+            final Process process = p;
+            reader = new Thread(new Runnable() {
+                @Override public void run() {
+                    BufferedReader br = null;
+                    try {
+                        br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            synchronized (out) { out.append(line).append('\n'); }
+                        }
+                    } catch (Exception ignored) {
+                    } finally {
+                        if (br != null) try { br.close(); } catch (Exception ignored) {}
+                    }
+                }
+            }, "hotspot-report-reader");
+            reader.setDaemon(true);
+            reader.start();
+
+            // Do not use readLine() on the UI worker as a timeout: readLine
+            // blocks until data/EOF and can otherwise hang forever on old su.
+            long deadline = System.currentTimeMillis() + 20000;
+            Integer exitCode = null;
+            while (System.currentTimeMillis() < deadline) {
+                try {
+                    exitCode = p.exitValue();
+                    break;
+                } catch (IllegalThreadStateException stillRunning) {
+                    try { Thread.sleep(50); } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw interrupted;
+                    }
+                }
+            }
+            if (exitCode == null) {
+                p.destroy();
+                try { p.getInputStream().close(); } catch (Exception ignored) {}
+                out.append("[su timeout after 20s]\n");
+            } else {
+                reader.join(1000);
+                out.append("[su exit=").append(exitCode).append("]\n");
+            }
         } catch (Exception e) {
             out.append("Root 检测失败：").append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append('\n');
         } finally {
             if (p != null) p.destroy();
+            if (reader != null) {
+                try { reader.join(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            }
         }
         return out.toString();
     }
