@@ -330,6 +330,26 @@ if final_read[0] >= final_touch[0]:
 manager_text = manager_text[:method_start] + method + manager_text[method_end:]
 MGR.write_text(manager_text, encoding="utf-8")
 
+# Restore the framework radio's original OFF state as explicitly as its ON state.
+# The existing teardown branch re-enables Wi-Fi only when wifiWasOn is true;
+# add the symmetric disable operation when it was originally false.
+teardown_off_branch = """    :cond_1
+    .line 360"""
+teardown_off_branch_fixed = """    :cond_1
+    sget-object v3, Lcom/shilapi/xcertplay/network/RootShell;->INSTANCE:Lcom/shilapi/xcertplay/network/RootShell;
+
+    const-string/jumbo v4, "svc wifi disable"
+
+    invoke-virtual {v3, v4, v5, v6}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
+
+    .line 360"""
+replace_method_literal(
+    MGR,
+    ".method private final teardown()V",
+    teardown_off_branch,
+    teardown_off_branch_fixed,
+    "teardown restore originally-off framework Wi-Fi",
+)
 
 for p in (CFG, MGR):
     t = p.read_text(encoding="utf-8")
