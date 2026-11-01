@@ -99,16 +99,31 @@ clinit_end = config_text.find(".end method", clinit_start)
 if clinit_start < 0 or clinit_end < 0:
     raise SystemExit("HostapdConfig static initializer not found")
 clinit = config_text[clinit_start:clinit_end]
-clinit, count = re.subn(
-    r"(const/4 v0, 0x)4\\s+(new-array v0, v0, \\[Ljava/lang/String;)",
-    r"\\g<1>7\\n\\n    \\2",
-    clinit,
-    count=1,
-)
-if count != 1:
-    raise SystemExit("binary directory array size was not found in static initializer")
-old_bin_pattern = r'const-string v1, "/bin"\\s+const/4 v2, 0x3\\s+aput-object v1, v0, v2'
-new_bin = '''const-string v1, "/vendor/bin/hw"
+clinit_lines = clinit.splitlines(keepends=True)
+size_hits = [i for i, line in enumerate(clinit_lines) if line.strip() == "const/4 v0, 0x4"]
+if len(size_hits) != 1:
+    raise SystemExit("binary directory array size was not found uniquely")
+size_i = size_hits[0]
+next_i = size_i + 1
+while next_i < len(clinit_lines) and not clinit_lines[next_i].strip():
+    next_i += 1
+if next_i >= len(clinit_lines) or clinit_lines[next_i].strip() != "new-array v0, v0, [Ljava/lang/String;":
+    raise SystemExit("binary directory array allocation did not match")
+clinit_lines[size_i] = clinit_lines[size_i].replace("0x4", "0x7", 1)
+
+bin_hits = [i for i, line in enumerate(clinit_lines) if line.strip() == 'const-string v1, "/bin"']
+if len(bin_hits) != 1:
+    raise SystemExit("binary directory /bin entry was not found uniquely")
+bin_i = bin_hits[0]
+instruction_lines = []
+j = bin_i + 1
+while j < len(clinit_lines) and len(instruction_lines) < 2:
+    if clinit_lines[j].strip():
+        instruction_lines.append(clinit_lines[j].strip())
+    j += 1
+if instruction_lines != ["const/4 v2, 0x3", "aput-object v1, v0, v2"]:
+    raise SystemExit("binary directory /bin entry register layout did not match")
+replacement = '''    const-string v1, "/vendor/bin/hw"
     const/4 v2, 0x3
     aput-object v1, v0, v2
 
@@ -122,10 +137,10 @@ new_bin = '''const-string v1, "/vendor/bin/hw"
 
     const-string v1, "/bin"
     const/4 v2, 0x6
-    aput-object v1, v0, v2'''
-clinit, count = re.subn(old_bin_pattern, lambda _: new_bin, clinit, count=1)
-if count != 1:
-    raise SystemExit("binary directory /bin entry was not found in static initializer")
+    aput-object v1, v0, v2
+'''
+clinit_lines[bin_i:j] = [replacement]
+clinit = "".join(clinit_lines)
 config_text = config_text[:clinit_start] + clinit + config_text[clinit_end:]
 CFG.write_text(config_text, encoding="utf-8")
 
