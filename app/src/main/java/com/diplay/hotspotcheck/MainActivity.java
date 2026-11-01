@@ -110,8 +110,7 @@ public class MainActivity extends Activity {
             String line;
             long until = System.currentTimeMillis() + 20000;
             while (System.currentTimeMillis() < until && (line = br.readLine()) != null) out.append(line).append('\n');
-            if (p.isAlive()) { p.destroy(); out.append("[检测超时，已结束读取]\n"); }
-            else out.append("[su exit=").append(p.exitValue()).append("]\n");
+            out.append("[su exit=").append(p.waitFor()).append("]\n");
         } catch (Exception e) {
             out.append("Root 检测失败：").append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append('\n');
         } finally {
