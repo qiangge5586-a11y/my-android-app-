@@ -54,31 +54,6 @@ def replace_method_literal(path: Path, signature: str, old_line: str, new_line: 
     chunk = chunk.replace(old_line, new_line, 1)
     path.write_text(source[:start] + chunk + source[end:], encoding="utf-8")
 
-def replace_binary_path(path: Path, binary: str, candidates: list[str]) -> None:
-    """Replace a fixed executable path inside Smali string constants with a POSIX shell probe."""
-    source = path.read_text(encoding="utf-8")
-    lines = source.splitlines(keepends=True)
-    hits = 0
-    probe = '$(for b in ' + " ".join(candidates) + '; do [ -x "$b" ] && { echo "$b"; break; }; done)'
-    for i, line in enumerate(lines):
-        if "const-string" not in line:
-            continue
-        try:
-            prefix, raw = line.split(", ", 1)
-            value = json.loads(raw.strip().replace("\\\\'", "'"))
-        except Exception:
-            continue
-        if f"/system/bin/{binary}" not in value:
-            continue
-        value = value.replace(f"/system/bin/{binary}", probe)
-        lines[i] = prefix + ", " + smali_string(value) + "\\n"
-        hits += 1
-    if hits < 1:
-        raise SystemExit(f"{path.name}: no fixed /system/bin/{binary} executable literal found")
-    path.write_text("".join(lines), encoding="utf-8")
-    print(f"{path.name}: enabled {binary} multi-path discovery in {hits} string(s)")
-
-
 def replace_const_fragment(path: Path, old: str, new: str, label: str) -> None:
     lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
     hits = []
@@ -116,15 +91,42 @@ for path in (CFG, MGR):
         text = text.replace(old, new)
     path.write_text(text, encoding="utf-8")
 
-# Resolve firmware-specific binary locations without assuming /system/bin.
-replace_binary_path(CFG, "hostapd", [
-    "/system/bin/hostapd", "/system/xbin/hostapd", "/vendor/bin/hostapd",
-    "/vendor/bin/hw/hostapd", "/system_ext/bin/hostapd", "/odm/bin/hostapd", "/bin/hostapd",
-])
-replace_binary_path(CFG, "dnsmasq", [
-    "/system/bin/dnsmasq", "/system/xbin/dnsmasq", "/vendor/bin/dnsmasq",
-    "/vendor/bin/hw/dnsmasq", "/system_ext/bin/dnsmasq", "/odm/bin/dnsmasq", "/bin/dnsmasq",
-])
+# Extend the existing Kotlin binary probe to cover vendor/ODM layouts.
+# The manager already probes and parses hostapd/dnsmasq paths; preserve that flow.
+init_old = '''    const/4 v0, 0x4
+    new-array v0, v0, [Ljava/lang/String;
+'''
+init_new = '''    const/4 v0, 0x7
+    new-array v0, v0, [Ljava/lang/String;
+'''
+config_text = CFG.read_text(encoding="utf-8")
+if config_text.count(init_old) != 1:
+    raise SystemExit("binary directory initializer did not match expected 4-entry array")
+config_text = config_text.replace(init_old, init_new, 1)
+old_bin = '''    const-string v1, "/bin"
+    const/4 v2, 0x3
+    aput-object v1, v0, v2
+'''
+new_bin = '''    const-string v1, "/vendor/bin/hw"
+    const/4 v2, 0x3
+    aput-object v1, v0, v2
+
+    const-string v1, "/system_ext/bin"
+    const/4 v2, 0x4
+    aput-object v1, v0, v2
+
+    const-string v1, "/odm/bin"
+    const/4 v2, 0x5
+    aput-object v1, v0, v2
+
+    const-string v1, "/bin"
+    const/4 v2, 0x6
+    aput-object v1, v0, v2
+'''
+if config_text.count(old_bin) != 1:
+    raise SystemExit("binary directory /bin initializer did not match expected position")
+config_text = config_text.replace(old_bin, new_bin, 1)
+CFG.write_text(config_text, encoding="utf-8")
 
 # Readiness must only count the hostapd process registered by this DiPlay session.
 replace_method_literal(MGR, ".method private final hostapdProcessCount()I", "    const-string/jumbo v1, \"ps\"", "    const-string/jumbo v1, \"d=/data/local/tmp/diplay-root-hotspot; owner=\\\"$d/hostapd.owner\\\"; [ -r \\\"$owner\\\" ] || exit 0; read p st osid < \\\"$owner\\\"; case \\\"$p:$st\\\" in *[!0-9:]*|'':*) exit 0;; esac; [ \\\"$p\\\" = \\\"$(cat \\\"$d/hostapd.pid\\\" 2>/dev/null)\\\" ] || exit 0; [ -n \\\"$osid\\\" ] && [ \\\"$osid\\\" = \\\"$(cat \\\"$d/session.id\\\" 2>/dev/null)\\\" ] || exit 0; [ -r \\\"/proc/$p/stat\\\" ] || exit 0; now=$(awk '{print $22}' \\\"/proc/$p/stat\\\" 2>/dev/null); comm=$(cat \\\"/proc/$p/comm\\\" 2>/dev/null); exe=$(readlink \\\"/proc/$p/exe\\\" 2>/dev/null); exe=${exe##*/}; [ \\\"$now\\\" = \\\"$st\\\" ] && [ \\\"$comm\\\" = hostapd ] && [ \\\"$exe\\\" = hostapd ] && echo hostapd\"", "owned hostapd readiness probe")
