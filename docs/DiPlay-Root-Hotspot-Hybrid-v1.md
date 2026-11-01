@@ -50,3 +50,23 @@ Stop only owned processes. Restore the previous shared config only if its curren
 5. Logs clearly distinguish binary missing, driver/AP unsupported, hostapd config/driver failure, dnsmasq failure, and DHCP/client failure.
 
 No real-car validation is claimed until the acceptance tests are performed on the vehicle.
+
+
+## Implemented in the hybrid v1 test build
+
+- Retained A's PID + `/proc/<pid>/stat` start-time + session-token ownership checks and hash-guarded shared-config restoration.
+- Kept B's existing binary-probe/parse flow and expanded the probe directories to `/system/bin`, `/system/xbin`, `/vendor/bin`, `/vendor/bin/hw`, `/system_ext/bin`, `/odm/bin`, and `/bin`.
+- Hostapd is launched in foreground mode under the background shell job, with its PID and owner identity recorded. Startup failure evidence is captured in the dedicated DiPlay log; log-tail output uses POSIX awk rather than `tail`.
+- dnsmasq startup now has an owner record written only after its PID, process start time, executable identity, and session token are checked. Startup aborts if the root-shell command reports that validation failed.
+- `validateReady()` now checks the owned hostapd process, the owned dnsmasq process, and the wlan0 address before allowing publication.
+- The read-only diagnostics script is compatible with older toolboxes by using graceful command fallbacks and avoiding GNU-only tail/head/sed dependencies.
+
+## CI result
+
+The hybrid v1 test build at commit `762f3aa500e503a15fd4d05b2da52b21665f480f` passed GitHub Actions:
+- APK decode and Smali patch
+- Smali rebuild and APK archive integrity
+- zipalign, signing, and v1/v2/v3 signature verification
+- package identity check (`com.shihab.diplay`, versionName `0.3.3`)
+
+This is a CI-verified test APK, not an on-car validated release. The APK retains the upstream package version metadata. The CI signing key is ephemeral per run, so this build may not update an installation signed by a different key; uninstalling an existing DiPlay install may be required and can erase its local data. No real-car SoftAP, phone association, DHCP lease, or Wi-Fi restoration test has been performed yet.
