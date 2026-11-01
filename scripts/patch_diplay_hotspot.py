@@ -54,6 +54,31 @@ def replace_method_literal(path: Path, signature: str, old_line: str, new_line: 
     chunk = chunk.replace(old_line, new_line, 1)
     path.write_text(source[:start] + chunk + source[end:], encoding="utf-8")
 
+def replace_binary_path(path: Path, binary: str, candidates: list[str]) -> None:
+    """Replace a fixed executable path inside Smali string constants with a POSIX shell probe."""
+    source = path.read_text(encoding="utf-8")
+    lines = source.splitlines(keepends=True)
+    hits = 0
+    probe = '$(for b in ' + " ".join(candidates) + '; do [ -x "$b" ] && { echo "$b"; break; }; done)'
+    for i, line in enumerate(lines):
+        if "const-string" not in line:
+            continue
+        try:
+            prefix, raw = line.split(", ", 1)
+            value = json.loads(raw.strip().replace("\\\\'", "'"))
+        except Exception:
+            continue
+        if f"/system/bin/{binary}" not in value:
+            continue
+        value = value.replace(f"/system/bin/{binary}", probe)
+        lines[i] = prefix + ", " + smali_string(value) + "\\n"
+        hits += 1
+    if hits < 1:
+        raise SystemExit(f"{path.name}: no fixed /system/bin/{binary} executable literal found")
+    path.write_text("".join(lines), encoding="utf-8")
+    print(f"{path.name}: enabled {binary} multi-path discovery in {hits} string(s)")
+
+
 def replace_const_fragment(path: Path, old: str, new: str, label: str) -> None:
     lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
     hits = []
@@ -91,6 +116,16 @@ for path in (CFG, MGR):
         text = text.replace(old, new)
     path.write_text(text, encoding="utf-8")
 
+# Resolve firmware-specific binary locations without assuming /system/bin.
+replace_binary_path(MGR, "hostapd", [
+    "/system/bin/hostapd", "/system/xbin/hostapd", "/vendor/bin/hostapd",
+    "/vendor/bin/hw/hostapd", "/system_ext/bin/hostapd", "/odm/bin/hostapd", "/bin/hostapd",
+])
+replace_binary_path(CFG, "dnsmasq", [
+    "/system/bin/dnsmasq", "/system/xbin/dnsmasq", "/vendor/bin/dnsmasq",
+    "/vendor/bin/hw/dnsmasq", "/system_ext/bin/dnsmasq", "/odm/bin/dnsmasq", "/bin/dnsmasq",
+])
+
 # Readiness must only count the hostapd process registered by this DiPlay session.
 replace_method_literal(MGR, ".method private final hostapdProcessCount()I", "    const-string/jumbo v1, \"ps\"", "    const-string/jumbo v1, \"d=/data/local/tmp/diplay-root-hotspot; owner=\\\"$d/hostapd.owner\\\"; [ -r \\\"$owner\\\" ] || exit 0; read p st osid < \\\"$owner\\\"; case \\\"$p:$st\\\" in *[!0-9:]*|'':*) exit 0;; esac; [ \\\"$p\\\" = \\\"$(cat \\\"$d/hostapd.pid\\\" 2>/dev/null)\\\" ] || exit 0; [ -n \\\"$osid\\\" ] && [ \\\"$osid\\\" = \\\"$(cat \\\"$d/session.id\\\" 2>/dev/null)\\\" ] || exit 0; [ -r \\\"/proc/$p/stat\\\" ] || exit 0; now=$(awk '{print $22}' \\\"/proc/$p/stat\\\" 2>/dev/null); comm=$(cat \\\"/proc/$p/comm\\\" 2>/dev/null); exe=$(readlink \\\"/proc/$p/exe\\\" 2>/dev/null); exe=${exe##*/}; [ \\\"$now\\\" = \\\"$st\\\" ] && [ \\\"$comm\\\" = hostapd ] && [ \\\"$exe\\\" = hostapd ] && echo hostapd\"", "owned hostapd readiness probe")
 probe_start = MGR.read_text(encoding="utf-8").find(".method private final hostapdProcessCount()I")
@@ -120,7 +155,7 @@ new_suffix = f''' {BASE}/hostapd.stage.conf && cp {BASE}/hostapd.stage.conf /dat
 replace_const_fragment(MGR, old_suffix, new_suffix, "shared config hash suffix")
 
 old_launch = f" -B /data/misc/wifi/hostapd.conf >{BASE}/hostapd.log 2>&1 & echo $!; sleep 1"
-new_launch = f''' /data/misc/wifi/hostapd.conf >{BASE}/hostapd.log 2>&1 & p=$!; sleep 1; if [ ! -r /proc/$p/stat ]; then wait "$p"; rc=$?; echo "hostapd exited before readiness (status=$rc)" >&2; tail -n 80 {BASE}/hostapd.log 2>&1; exit 1; fi; st=$(awk '{{print $22}}' /proc/$p/stat 2>/dev/null); comm=$(cat /proc/$p/comm 2>/dev/null); exe=$(readlink /proc/$p/exe 2>/dev/null); exe=${{exe##*/}}; if [ -z "$st" ] || [ "$comm" != hostapd ] || [ "$exe" != hostapd ]; then echo "hostapd process identity check failed" >&2; tail -n 80 {BASE}/hostapd.log 2>&1; exit 1; fi; sid=$(cat {BASE}/session.id 2>/dev/null); [ -n "$sid" ] || {{ kill -TERM "$p" 2>/dev/null; exit 1; }}; printf '%s\\n' "$p" > {BASE}/hostapd.pid && printf '%s %s %s\\n' "$p" "$st" "$sid" > {BASE}/hostapd.owner || {{ kill -TERM "$p" 2>/dev/null; rm -f {BASE}/hostapd.pid {BASE}/hostapd.owner; exit 1; }}'''
+new_launch = f''' /data/misc/wifi/hostapd.conf >{BASE}/hostapd.log 2>&1 & p=$!; sleep 1; if [ ! -r /proc/$p/stat ]; then wait "$p"; rc=$?; echo "hostapd exited before readiness (status=$rc)" >&2; awk '{{ line[NR % 80]=$0 }} END {{ first=NR>80?NR-79:1; for(i=first;i<=NR;i++) print line[i%80] }}' {BASE}/hostapd.log 2>&1; exit 1; fi; st=$(awk '{{print $22}}' /proc/$p/stat 2>/dev/null); comm=$(cat /proc/$p/comm 2>/dev/null); exe=$(readlink /proc/$p/exe 2>/dev/null); exe=${{exe##*/}}; if [ -z "$st" ] || [ "$comm" != hostapd ] || [ "$exe" != hostapd ]; then echo "hostapd process identity check failed" >&2; awk '{{ line[NR % 80]=$0 }} END {{ first=NR>80?NR-79:1; for(i=first;i<=NR;i++) print line[i%80] }}' {BASE}/hostapd.log 2>&1; exit 1; fi; sid=$(cat {BASE}/session.id 2>/dev/null); [ -n "$sid" ] || {{ kill -TERM "$p" 2>/dev/null; exit 1; }}; printf '%s\\n' "$p" > {BASE}/hostapd.pid && printf '%s %s %s\\n' "$p" "$st" "$sid" > {BASE}/hostapd.owner || {{ kill -TERM "$p" 2>/dev/null; rm -f {BASE}/hostapd.pid {BASE}/hostapd.owner; exit 1; }}'''
 replace_const_fragment(MGR, old_launch, new_launch, "hostapd PID ownership registration")
 
 text = CFG.read_text(encoding="utf-8")
