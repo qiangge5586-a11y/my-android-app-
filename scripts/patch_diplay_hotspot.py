@@ -144,9 +144,9 @@ if method_end < 0:
     raise SystemExit("startHotspot method is unterminated")
 method = manager_text[method_start:method_end]
 read_pattern = re.compile(
-    r"(?m)^([ \t]*)invoke-direct \{(?P<reg>[vp]\d+)\}, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->readFrameworkWifiOn\(\)Z\n"
-    r"[ \t]*move-result (?P<result>[vp]\d+)\n"
-    r"[ \t]*iput-boolean (?P=result), (?P=reg), Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->wifiWasOn:Z\n"
+    r"(?m)^([ \\t]*)invoke-direct \\{(?P<reg>[vp]\\d+)\\}, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->readFrameworkWifiOn\\(\\)Z\\n"
+    r"(?:[ \\t]*\\n)*[ \\t]*move-result (?P<result>[vp]\\d+)\\n"
+    r"(?:[ \\t]*\\n)*[ \\t]*iput-boolean (?P=result), (?P=reg), Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->wifiWasOn:Z\\n"
 )
 reads = list(read_pattern.finditer(method))
 if len(reads) != 1:
