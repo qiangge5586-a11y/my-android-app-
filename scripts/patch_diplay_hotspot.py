@@ -143,23 +143,41 @@ method_end = manager_text.find(".end method", method_start)
 if method_end < 0:
     raise SystemExit("startHotspot method is unterminated")
 method = manager_text[method_start:method_end]
-read_pattern = re.compile(
-    r"(?m)^([ \\t]*)invoke-direct \\{(?P<reg>[vp]\\d+)\\}, [^\\n]*->readFrameworkWifiOn\\(\\)Z[^\\n]*\\n"
-    r"[\\s\\S]{0,256}?[ \\t]*move-result (?P<result>[vp]\\d+)[ \\t]*\\n"
-    r"[\\s\\S]{0,256}?[ \\t]*iput-boolean (?P=result), (?P=reg), [^\\n]*->wifiWasOn:Z[^\\n]*\\n"
-)
-reads = list(read_pattern.finditer(method))
-if len(reads) != 1:
-    raise SystemExit(f"expected one original Wi-Fi state capture in startHotspot, got {len(reads)}")
-read_block = reads[0].group(0)
-method = method[:reads[0].start()] + method[reads[0].end():]
-touched_pattern = re.compile(
-    r"(?m)^[ \t]*iput-boolean [vp]\d+, [vp]\d+, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->touchedSystem:Z\n"
-)
-touched = list(touched_pattern.finditer(method))
-if len(touched) != 1:
-    raise SystemExit(f"expected one touchedSystem activation in startHotspot, got {len(touched)}")
-method = method[:touched[0].start()] + read_block + method[touched[0].start():]
+# Locate the three Smali instructions by method-local line content, not regex escaping.
+method_lines = method.splitlines(keepends=True)
+invoke_hits = [i for i, line in enumerate(method_lines) if "->readFrameworkWifiOn()Z" in line and "invoke-direct" in line]
+if len(invoke_hits) != 1:
+    raise SystemExit(f"expected one readFrameworkWifiOn invoke in startHotspot, got {len(invoke_hits)}")
+invoke_i = invoke_hits[0]
+invoke_line = method_lines[invoke_i]
+try:
+    receiver = invoke_line.split("{", 1)[1].split("}", 1)[0].strip()
+except IndexError:
+    raise SystemExit("could not parse readFrameworkWifiOn receiver register")
+move_hits = [i for i in range(invoke_i + 1, min(invoke_i + 12, len(method_lines)))
+             if method_lines[i].strip().startswith("move-result ")]
+if len(move_hits) != 1:
+    raise SystemExit(f"expected one move-result after Wi-Fi state read, got {len(move_hits)}")
+move_i = move_hits[0]
+result_reg = method_lines[move_i].strip().split(None, 1)[1]
+if result_reg not in ("v" + str(n) for n in range(100)) and not result_reg.startswith("p"):
+    raise SystemExit("unexpected move-result register")
+save_hits = [i for i in range(move_i + 1, min(move_i + 12, len(method_lines)))
+             if "->wifiWasOn:Z" in method_lines[i] and "iput-boolean" in method_lines[i]]
+if len(save_hits) != 1:
+    raise SystemExit(f"expected one wifiWasOn store after state read, got {len(save_hits)}")
+save_i = save_hits[0]
+save_parts = method_lines[save_i].strip().split()
+if len(save_parts) < 4 or save_parts[1] != result_reg or save_parts[2].rstrip(",") != receiver:
+    raise SystemExit("Wi-Fi state read/store register relationship did not match")
+read_block = method_lines[invoke_i:save_i + 1]
+del method_lines[invoke_i:save_i + 1]
+touched_hits = [i for i, line in enumerate(method_lines)
+                if "->touchedSystem:Z" in line and "iput-boolean" in line]
+if len(touched_hits) != 1:
+    raise SystemExit(f"expected one touchedSystem activation in startHotspot, got {len(touched_hits)}")
+method_lines[touched_hits[0]:touched_hits[0]] = read_block
+method = "".join(method_lines)
 manager_text = manager_text[:method_start] + method + manager_text[method_end:]
 if manager_text.find(read_block, method_start) > manager_text.find("touchedSystem:Z", method_start):
     raise SystemExit("Wi-Fi state capture was not moved before system mutation")
