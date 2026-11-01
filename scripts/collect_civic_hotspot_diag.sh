@@ -28,7 +28,8 @@ for b in /vendor/bin/hostapd /system/bin/hostapd /system_ext/bin/hostapd /odm/bi
   if [ -x "$b" ]; then
     echo "--- $b ---"
     "$b" -v 2>&1
-    "$b" -h 2>&1 | head -n 35
+    echo "HELP (full; check for -P support):"
+    "$b" -h 2>&1
   fi
 done
 for b in /vendor/bin/dnsmasq /system/bin/dnsmasq /system_ext/bin/dnsmasq /odm/bin/dnsmasq; do
@@ -54,6 +55,33 @@ ls -l /vendor/lib/modules /vendor_dlkm/lib/modules /odm/lib/modules 2>/dev/null
 section "CURRENT SERVICE STATE"
 svc wifi status 2>&1
 ps -A 2>/dev/null | grep -E 'hostapd|dnsmasq|wpa_supplicant|wifi' | grep -v grep
+
+
+section "DIPLAY RUNTIME FILES AND HOSTAPD LOGS"
+for f in /data/local/tmp/diplay-root-hotspot/hostapd.log /data/local/tmp/diplay-root-hotspot/dnsmasq.log /data/local/tmp/diplay-root-hotspot/hostapd.pid /data/local/tmp/diplay-root-hotspot/hostapd.owner /data/local/tmp/hapd.log /data/local/tmp/hostapd.log /data/local/tmp/dns.log; do
+  if [ -e "$f" ]; then
+    ls -l "$f" 2>&1
+    case "$f" in
+      *.log) echo "--- tail: $f ---"; tail -n 160 "$f" 2>&1 ;;
+      *) echo "--- value: $f ---"; cat "$f" 2>&1 ;;
+    esac
+  else
+    echo "MISSING $f"
+  fi
+done
+
+section "HOSTAPD CONFIG (SECRETS REDACTED)"
+for f in /data/misc/wifi/hostapd.conf /data/local/tmp/diplay-root-hotspot/hostapd.stage.conf; do
+  if [ -r "$f" ]; then
+    ls -l "$f"
+    sed -E 's/^([[:space:]]*(ssid|wpa_passphrase|wpa_psk|sae_password)[[:space:]]*=).*/\\1<REDACTED>/I' "$f"
+  else
+    echo "MISSING OR UNREADABLE $f"
+  fi
+done
+
+section "KERNEL WIFI ERROR TAIL"
+dmesg 2>/dev/null | grep -iE 'nl80211|cfg80211|mac80211|wlan0|hostapd|firmware|AP-STA|failed|error' | tail -n 160
 
 echo
 echo "===== END (read-only; no settings changed) ====="
