@@ -186,6 +186,77 @@ new_lit = old_lit + f''' sleep 1; p=$(cat {BASE}/dnsmasq.pid 2>/dev/null); case 
 text = text[:match.start(2)] + smali_string(new_lit) + text[match.end(2):]
 CFG.write_text(text, encoding="utf-8")
 
+# Do not publish "ready" merely because the dnsmasq shell command was accepted.
+# dnsmasqCommand writes an owner record only after checking its PID, /proc start
+# time, executable identity, and current session token. Require RootShell success.
+dns_launch = '''    invoke-virtual {v0, v4, v10, v11}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
+'''
+dns_launch_checked = dns_launch + '''    move-result-object v4
+
+    invoke-virtual {v4}, Lcom/shilapi/xcertplay/network/RootShell$Result;->getSuccess()Z
+
+    move-result v4
+
+    if-nez v4, :diplay_dnsmasq_owner_ok
+
+    new-instance v4, Ljava/io/IOException;
+
+    const-string v5, "hostapd: dnsmasq did not stay up or failed process ownership validation"
+
+    invoke-direct {v4, v5}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
+
+    throw v4
+
+    :diplay_dnsmasq_owner_ok
+'''
+replace_method_literal(MGR, ".method private final startHotspot(", dns_launch, dns_launch_checked, "dnsmasq launch result validation")
+
+# A subsequent readiness check must also verify that this session's dnsmasq
+# process is still alive; hostapd + interface address alone is insufficient.
+dns_alive_method = '''.method private final dnsmasqProcessAlive()Z
+    .locals 4
+
+    sget-object v0, Lcom/shilapi/xcertplay/network/RootShell;->INSTANCE:Lcom/shilapi/xcertplay/network/RootShell;
+
+    const-string/jumbo v1, "d=/data/local/tmp/diplay-root-hotspot; owner=\\\"$d/dnsmasq.owner\\\"; [ -r \\\"$owner\\\" ] || exit 1; read p st osid < \\\"$owner\\\"; case \\\"$p:$st\\\" in *[!0-9:]*|'':*) exit 1;; esac; [ \\\"$p\\\" = \\\"$(cat \\\"$d/dnsmasq.pid\\\" 2>/dev/null)\\\" ] || exit 1; [ -n \\\"$osid\\\" ] && [ \\\"$osid\\\" = \\\"$(cat \\\"$d/session.id\\\" 2>/dev/null)\\\" ] || exit 1; [ -r \\\"/proc/$p/stat\\\" ] || exit 1; now=$(awk '{print $22}' \\\"/proc/$p/stat\\\" 2>/dev/null); comm=$(cat \\\"/proc/$p/comm\\\" 2>/dev/null); exe=$(readlink \\\"/proc/$p/exe\\\" 2>/dev/null); exe=\u0024{exe##*/}; [ \\\"$now\\\" = \\\"$st\\\" ] && [ \\\"$comm\\\" = dnsmasq ] && [ \\\"$exe\\\" = dnsmasq ]";
+
+    const-wide/16 v2, 0x1388
+
+    invoke-virtual {v0, v1, v2, v3}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Lcom/shilapi/xcertplay/network/RootShell$Result;->getSuccess()Z
+
+    move-result v0
+
+    return v0
+.end method
+
+'''
+if "->dnsmasqProcessAlive()Z" not in MGR.read_text(encoding="utf-8"):
+    mgr_text = MGR.read_text(encoding="utf-8")
+    anchor_method = ".method private final interfaceHasHostAddress()Z"
+    if mgr_text.count(anchor_method) != 1:
+        raise SystemExit("interfaceHasHostAddress insertion anchor not unique")
+    mgr_text = mgr_text.replace(anchor_method, dns_alive_method + anchor_method, 1)
+    MGR.write_text(mgr_text, encoding="utf-8")
+
+replace_method_literal(
+    MGR,
+    ".method public validateReady()V",
+    "    if-lt v0, v1, :cond_0",
+    "    if-lt v0, v1, :cond_0\\n\\n    invoke-direct {p0}, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->dnsmasqProcessAlive()Z\\n\\n    move-result v0\\n\\n    if-eqz v0, :cond_0",
+    "validateReady dnsmasq ownership check",
+)
+replace_method_literal(
+    MGR,
+    ".method public validateReady()V",
+    '    const-string v2, "hostapd or the wlan0 address went away before publication"',
+    '    const-string v2, "hostapd, dnsmasq, or the wlan0 address went away before publication"',
+    "validateReady error text",
+)
+
 # Capture the framework Wi-Fi state before marking the system as touched.
 # Work inside startHotspot only; register allocation can differ between builds.
 manager_text = MGR.read_text(encoding="utf-8")
