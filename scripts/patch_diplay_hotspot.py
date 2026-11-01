@@ -169,7 +169,7 @@ if len(save_hits) != 1:
 save_i = save_hits[0]
 save_parts = method_lines[save_i].strip().split()
 if len(save_parts) < 4 or save_parts[1].rstrip(",") != result_reg or save_parts[2].rstrip(",") != receiver:
-    raise SystemExit("Wi-Fi state read/store register relationship did not match")
+    raise SystemExit(f"Wi-Fi state read/store register relationship did not match: receiver={receiver!r}, result={result_reg!r}, store={method_lines[save_i].strip()!r}")
 read_block = method_lines[invoke_i:save_i + 1]
 del method_lines[invoke_i:save_i + 1]
 touched_hits = [i for i, line in enumerate(method_lines)
@@ -179,7 +179,7 @@ if len(touched_hits) != 1:
 method_lines[touched_hits[0]:touched_hits[0]] = read_block
 method = "".join(method_lines)
 manager_text = manager_text[:method_start] + method + manager_text[method_end:]
-if manager_text.find(read_block, method_start) > manager_text.find("touchedSystem:Z", method_start):
+if manager_text.find("".join(read_block), method_start) > manager_text.find("touchedSystem:Z", method_start):
     raise SystemExit("Wi-Fi state capture was not moved before system mutation")
 
 
