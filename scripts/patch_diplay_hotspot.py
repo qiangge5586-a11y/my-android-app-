@@ -219,6 +219,57 @@ dns_launch_checked = '''    invoke-virtual {v0, v4, v10, v11}, Lcom/shilapi/xcer
 '''
 replace_method_literal(MGR, ".method private final startHotspot(", dns_launch, dns_launch_checked, "dnsmasq launch result validation")
 
+# Never interpret an unreadable Wi-Fi state as OFF. If settings cannot return
+# exactly 0 or 1, abort before touchedSystem is set so teardown cannot apply
+# a guessed state and unexpectedly disable/enable the radio.
+wifi_state_old = """    const-string v2, "1"
+
+    invoke-static {v1, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+
+    move-result v1
+
+    return v1"""
+wifi_state_new = """    const-string v2, "1"
+
+    invoke-static {v1, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+
+    move-result v3
+
+    if-nez v3, :diplay_wifi_state_on
+
+    const-string v2, "0"
+
+    invoke-static {v1, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+
+    move-result v3
+
+    if-nez v3, :diplay_wifi_state_off
+
+    new-instance v0, Ljava/lang/IllegalStateException;
+
+    const-string v1, "Unable to determine original framework Wi-Fi state"
+
+    invoke-direct {v0, v1}, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
+
+    throw v0
+
+    :diplay_wifi_state_on
+    const/4 v1, 0x1
+
+    return v1
+
+    :diplay_wifi_state_off
+    const/4 v1, 0x0
+
+    return v1"""
+replace_method_literal(
+    MGR,
+    ".method private final readFrameworkWifiOn()Z",
+    wifi_state_old,
+    wifi_state_new,
+    "fail-safe original Wi-Fi state detection",
+)
+
 # A subsequent readiness check must also verify that this session's dnsmasq
 # process is still alive; hostapd + interface address alone is insufficient.
 dns_alive_shell = r'''d=/data/local/tmp/diplay-root-hotspot; owner="$d/dnsmasq.owner"; [ -r "$owner" ] || exit 1; read p st osid < "$owner"; case "$p:$st" in *[!0-9:]*|'':*) exit 1;; esac; [ "$p" = "$(cat "$d/dnsmasq.pid" 2>/dev/null)" ] || exit 1; [ -n "$osid" ] && [ "$osid" = "$(cat "$d/session.id" 2>/dev/null)" ] || exit 1; [ -r "/proc/$p/stat" ] || exit 1; now=$(awk '{print $22}' "/proc/$p/stat" 2>/dev/null); comm=$(cat "/proc/$p/comm" 2>/dev/null); exe=$(readlink "/proc/$p/exe" 2>/dev/null); exe=${exe##*/}; [ "$now" = "$st" ] && [ "$comm" = dnsmasq ] && [ "$exe" = dnsmasq ]'''
