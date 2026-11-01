@@ -125,3 +125,33 @@ The current patch:
 6. The rebuilt APK uses a test signing key, not the original developer key. It may not install as an in-place update over the original app; back up DiPlay settings/data before considering uninstall/reinstall.
 
 The previous Actions run (run ID `41267603857`) completed successfully, but the generated artifact is only a build artifact and has not passed physical-device acceptance tests. The next release gate is on-device diagnostics, not another speculative feature change.
+
+
+## 2026-11-01 log-driven diagnostic update
+
+The uploaded DiPlay log reports Android 4.2.2 / API 17 and a device label of
+`MITSUBISHI ELECTRIC MY16ADA`, while a firmware property contains
+`Honda/Andromeda/vcm30t30`. These identifiers conflict, so the log must not be
+treated as confirmed evidence from the previously described 2019 Civic.
+
+The observed hostapd launch returned a PID from the background shell, but the
+process was no longer alive on the subsequent check. The log did not capture
+hostapd stderr/stdout, so it does not establish whether the cause is an
+unsupported driver/AP mode, an unsupported hostapd option, or a config error.
+The DHCP stage was not reached.
+
+The read-only collector now additionally reports DiPlay runtime logs and PID
+metadata, the shared/staged hostapd configuration with SSID and passphrase
+fields redacted, and relevant kernel Wi-Fi errors. It prints the full hostapd
+help output so the presence or absence of `-P` can be checked. It does not
+start or stop Wi-Fi, hostapd, or dnsmasq.
+
+Important remaining validation:
+- The current patch uses hostapd `-P`; compatibility with the target binary is
+  unconfirmed until its actual help output is collected.
+- The runtime directory is a dedicated DiPlay-owned directory guarded by a
+  lock and session token; it is not yet a unique nested directory per run.
+- No AP/phone/DHCP success has been verified on the vehicle.
+- The log's conflicting device identifiers must be resolved before attributing
+  its results to the Civic.
+
