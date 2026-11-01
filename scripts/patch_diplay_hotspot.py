@@ -191,6 +191,7 @@ CFG.write_text(text, encoding="utf-8")
 # time, executable identity, and current session token. Require RootShell success.
 dns_launch = '''    invoke-virtual {v0, v4, v10, v11}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
 
+    .line 273
     const/4 v4, 0x1
 '''
 dns_launch_checked = '''    invoke-virtual {v0, v4, v10, v11}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
@@ -213,6 +214,7 @@ dns_launch_checked = '''    invoke-virtual {v0, v4, v10, v11}, Lcom/shilapi/xcer
 
     :diplay_dnsmasq_owner_ok
 
+    .line 273
     const/4 v4, 0x1
 '''
 replace_method_literal(MGR, ".method private final startHotspot(", dns_launch, dns_launch_checked, "dnsmasq launch result validation")
