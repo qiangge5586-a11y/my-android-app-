@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           sh -n scripts/collect_civic_hotspot_diag.sh
-          ! grep -Eq '(^|[;&|[:space:]])(svc[[:space:]]+wifi[[:space:]]+(disable|enable)|ifconfig[[:space:]]+wlan0[[:space:]]+down|ip[[:space:]]+link[[:space:]]+set[[:space:]]+wlan0[[:space:]]+down|hostapd[[:space:]]+-B|dnsmasq[[:space:]])' scripts/collect_civic_hotspot_diag.sh
+          ! grep -Eq '^[[:space:]]*(svc[[:space:]]+wifi[[:space:]]+(disable|enable)|ifconfig[[:space:]]+wlan0[[:space:]]+down|ip[[:space:]]+link[[:space:]]+set[[:space:]]+wlan0[[:space:]]+down|hostapd[[:space:]]+-B|dnsmasq[[:space:]]+-)' scripts/collect_civic_hotspot_diag.sh
       - name: Patch hotspot Smali and rebuild APK
         shell: bash
         run: |
