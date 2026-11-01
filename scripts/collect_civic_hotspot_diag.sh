@@ -74,7 +74,7 @@ section "HOSTAPD CONFIG (SECRETS REDACTED)"
 for f in /data/misc/wifi/hostapd.conf /data/local/tmp/diplay-root-hotspot/hostapd.stage.conf; do
   if [ -r "$f" ]; then
     ls -l "$f"
-    sed -E 's/^([[:space:]]*(ssid|wpa_passphrase|wpa_psk|sae_password)[[:space:]]*=).*/\\1<REDACTED>/I' "$f"
+    awk 'BEGIN{IGNORECASE=1} /^[[:space:]]*(ssid|wpa_passphrase|wpa_psk|sae_password)[[:space:]]*=/ { sub(/=.*/, "=<REDACTED>") } { print }' "$f"
   else
     echo "MISSING OR UNREADABLE $f"
   fi
