@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <application android:allowBackup="false" android:label="车机热点兼容性检测" android:theme="@android:style/Theme.Holo.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
