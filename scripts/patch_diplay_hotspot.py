@@ -221,27 +221,20 @@ replace_method_literal(MGR, ".method private final startHotspot(", dns_launch, d
 
 # A subsequent readiness check must also verify that this session's dnsmasq
 # process is still alive; hostapd + interface address alone is insufficient.
-dns_alive_method = '''.method private final dnsmasqProcessAlive()Z
-    .locals 4
-
-    sget-object v0, Lcom/shilapi/xcertplay/network/RootShell;->INSTANCE:Lcom/shilapi/xcertplay/network/RootShell;
-
-    const-string/jumbo v1, "d=/data/local/tmp/diplay-root-hotspot; owner=\\\"$d/dnsmasq.owner\\\"; [ -r \\\"$owner\\\" ] || exit 1; read p st osid < \\\"$owner\\\"; case \\\"$p:$st\\\" in *[!0-9:]*|'':*) exit 1;; esac; [ \\\"$p\\\" = \\\"$(cat \\\"$d/dnsmasq.pid\\\" 2>/dev/null)\\\" ] || exit 1; [ -n \\\"$osid\\\" ] && [ \\\"$osid\\\" = \\\"$(cat \\\"$d/session.id\\\" 2>/dev/null)\\\" ] || exit 1; [ -r \\\"/proc/$p/stat\\\" ] || exit 1; now=$(awk '{print $22}' \\\"/proc/$p/stat\\\" 2>/dev/null); comm=$(cat \\\"/proc/$p/comm\\\" 2>/dev/null); exe=$(readlink \\\"/proc/$p/exe\\\" 2>/dev/null); exe=\u0024{exe##*/}; [ \\\"$now\\\" = \\\"$st\\\" ] && [ \\\"$comm\\\" = dnsmasq ] && [ \\\"$exe\\\" = dnsmasq ]";
-
-    const-wide/16 v2, 0x1388
-
-    invoke-virtual {v0, v1, v2, v3}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
-
-    move-result-object v0
-
-    invoke-virtual {v0}, Lcom/shilapi/xcertplay/network/RootShell$Result;->getSuccess()Z
-
-    move-result v0
-
-    return v0
-.end method
-
-'''
+dns_alive_shell = r'''d=/data/local/tmp/diplay-root-hotspot; owner="$d/dnsmasq.owner"; [ -r "$owner" ] || exit 1; read p st osid < "$owner"; case "$p:$st" in *[!0-9:]*|'':*) exit 1;; esac; [ "$p" = "$(cat "$d/dnsmasq.pid" 2>/dev/null)" ] || exit 1; [ -n "$osid" ] && [ "$osid" = "$(cat "$d/session.id" 2>/dev/null)" ] || exit 1; [ -r "/proc/$p/stat" ] || exit 1; now=$(awk '{print $22}' "/proc/$p/stat" 2>/dev/null); comm=$(cat "/proc/$p/comm" 2>/dev/null); exe=$(readlink "/proc/$p/exe" 2>/dev/null); exe=${exe##*/}; [ "$now" = "$st" ] && [ "$comm" = dnsmasq ] && [ "$exe" = dnsmasq ]'''
+dns_alive_method = (
+    ".method private final dnsmasqProcessAlive()Z\\n"
+    "    .locals 4\\n\\n"
+    "    sget-object v0, Lcom/shilapi/xcertplay/network/RootShell;->INSTANCE:Lcom/shilapi/xcertplay/network/RootShell;\\n\\n"
+    "    const-string/jumbo v1, " + smali_string(dns_alive_shell) + "\\n\\n"
+    "    const-wide/16 v2, 0x1388\\n\\n"
+    "    invoke-virtual {v0, v1, v2, v3}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;\\n\\n"
+    "    move-result-object v0\\n\\n"
+    "    invoke-virtual {v0}, Lcom/shilapi/xcertplay/network/RootShell$Result;->getSuccess()Z\\n\\n"
+    "    move-result v0\\n\\n"
+    "    return v0\\n"
+    ".end method\\n\\n"
+)
 if "->dnsmasqProcessAlive()Z" not in MGR.read_text(encoding="utf-8"):
     mgr_text = MGR.read_text(encoding="utf-8")
     anchor_method = ".method private final interfaceHasHostAddress()Z"
