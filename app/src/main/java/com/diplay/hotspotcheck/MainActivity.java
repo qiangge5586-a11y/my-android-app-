@@ -143,10 +143,17 @@ public class MainActivity extends Activity {
             "echo __WIFI_PROPERTIES__; getprop wifi.interface; getprop wifi.driver.status; getprop wlan.driver.status; getprop wifi.driver; " +
             "echo __BINS__; for x in hostapd dnsmasq iw; do for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/$x ]; then echo $x=$d/$x; break; fi; done; done; " +
             "echo __HOSTAPD_VERSION__; H=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/hostapd ]; then H=$d/hostapd; break; fi; done; if [ -n \"$H\" ]; then $H -v 2>&1; fi; " +
-            "echo __IW__; IW=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/iw ]; then IW=$d/iw; break; fi; done; if [ -n \"$IW\" ]; then echo IW_PATH=$IW; $IW dev 2>&1; $IW list 2>&1; else echo IW_NOT_FOUND; fi; " +
+            "echo __IW__; IW=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/iw ]; then IW=$d/iw; break; fi; done; if [ -n \"$IW\" ]; then echo IW_PATH=$IW; $IW dev 2>&1; $IW list 2>&1; $IW dev wlan0 info 2>&1; $IW dev wlan0 station dump 2>&1; else echo IW_NOT_FOUND; fi; " +
+            "echo __WIFI_STATE__; settings get global wifi_on 2>&1; getprop init.svc.wpa_supplicant; getprop init.svc.hostapd; getprop init.svc.dnsmasq; " +
+            "echo __PROCESS_TABLE__; ps 2>&1; echo __PROCESS_TABLE_A__; ps -A 2>&1; " +
+            "echo __HOTSPOT_FILES__; for f in /data/misc/wifi/hostapd.conf /data/misc/wifi/hostapd.pid /data/misc/wifi/dnsmasq.pid /data/misc/wifi/dnsmasq.leases /data/misc/wifi/softap.conf /data/misc/wifi/wpa_supplicant.conf; do if [ -e \"$f\" ]; then ls -ld \"$f\"; else echo MISSING:$f; fi; done; " +
+            "echo __PID_FILES__; for f in /data/misc/wifi/hostapd.pid /data/misc/wifi/dnsmasq.pid; do if [ -r \"$f\" ]; then echo $f=$(cat \"$f\" 2>/dev/null); fi; done; " +
             "echo __MODULES__; cat /proc/modules 2>&1";
         String result = runSu(shell);
         r.append(result);
+        r.append("\n\n===== 进阶只读观察 =====\n");
+        r.append("注意：ps、iw station dump 和配置文件检查均为只读；不输出配置文件内容或 Wi-Fi 密码。\n");
+        r.append("若系统没有 iw/ps -A，相关错误信息属于工具兼容性线索，不代表硬件不支持 AP。\n");
         r.append("\n\n===== 初步判断 =====\n");
         String low = result.toLowerCase(Locale.US);
         boolean root = result.contains("uid=0");
