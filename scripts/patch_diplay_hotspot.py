@@ -178,9 +178,18 @@ if len(touched_hits) != 1:
     raise SystemExit(f"expected one touchedSystem activation in startHotspot, got {len(touched_hits)}")
 method_lines[touched_hits[0]:touched_hits[0]] = read_block
 method = "".join(method_lines)
+# Validate the final method itself, then persist the modified Smali file.
+final_lines = method.splitlines()
+final_read = [i for i, line in enumerate(final_lines)
+              if "invoke-direct" in line and "->readFrameworkWifiOn()Z" in line]
+final_touch = [i for i, line in enumerate(final_lines)
+               if "iput-boolean" in line and "->touchedSystem:Z" in line]
+if len(final_read) != 1 or len(final_touch) != 1:
+    raise SystemExit(f"final Wi-Fi ordering anchors invalid: read={final_read}, touched={final_touch}")
+if final_read[0] >= final_touch[0]:
+    raise SystemExit(f"Wi-Fi state capture still occurs after touchedSystem: read_line={final_read[0]}, touched_line={final_touch[0]}")
 manager_text = manager_text[:method_start] + method + manager_text[method_end:]
-if manager_text.find("".join(read_block), method_start) > manager_text.find("touchedSystem:Z", method_start):
-    raise SystemExit("Wi-Fi state capture was not moved before system mutation")
+MGR.write_text(manager_text, encoding="utf-8")
 
 
 for p in (CFG, MGR):
