@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/analyze-diplay.yml'
       - 'DiPlay0.3.3.apk'
+      - 'docs/DiPlay-v0.3.3-hotspot-hardening.md'
   workflow_dispatch:
 
 permissions:
