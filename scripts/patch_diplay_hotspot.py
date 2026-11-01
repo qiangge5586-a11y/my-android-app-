@@ -432,24 +432,35 @@ if final_read[0] >= final_touch[0]:
 manager_text = manager_text[:method_start] + method + manager_text[method_end:]
 MGR.write_text(manager_text, encoding="utf-8")
 
-# Restore the framework radio's original OFF state as explicitly as its ON state.
-# The existing teardown branch re-enables Wi-Fi only when wifiWasOn is true;
-# add the symmetric disable operation when it was originally false.
-teardown_off_branch = """    :cond_1
-    nop"""
-teardown_off_branch_fixed = """    :cond_1
+# Preserve the original framework radio state in both directions. The
+# existing branch re-enables Wi-Fi when it was ON; redirect its OFF branch
+# through an explicit disable command without running that command after enable.
+replace_method_literal(
+    MGR,
+    ".method private final teardown()V",
+    "    if-eqz v3, :cond_1",
+    "    if-eqz v3, :diplay_wifi_was_off",
+    "teardown Wi-Fi state branch",
+)
+replace_method_literal(
+    MGR,
+    ".method private final teardown()V",
+    """    invoke-virtual {v3, v4, v5, v6}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
+
+    .line 360""",
+    """    invoke-virtual {v3, v4, v5, v6}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
+
+    goto :diplay_wifi_restore_done
+
+    :diplay_wifi_was_off
     sget-object v3, Lcom/shilapi/xcertplay/network/RootShell;->INSTANCE:Lcom/shilapi/xcertplay/network/RootShell;
 
     const-string/jumbo v4, "svc wifi disable"
 
     invoke-virtual {v3, v4, v5, v6}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
 
-    .line 360"""
-replace_method_literal(
-    MGR,
-    ".method private final teardown()V",
-    teardown_off_branch,
-    teardown_off_branch_fixed,
+    :diplay_wifi_restore_done
+    .line 360""",
     "teardown restore originally-off framework Wi-Fi",
 )
 
