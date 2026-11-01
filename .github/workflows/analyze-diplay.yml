@@ -1,4 +1,4 @@
-name: Analyze DiPlay APK
+name: Analyze and patch DiPlay APK
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - '.github/workflows/analyze-diplay.yml'
       - 'DiPlay0.3.3.apk'
       - 'docs/DiPlay-v0.3.3-hotspot-hardening.md'
+      - 'scripts/patch_diplay_hotspot.py'
   workflow_dispatch:
 
 permissions:
@@ -14,7 +15,7 @@ permissions:
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -35,6 +36,16 @@ jobs:
           jadx/bin/jadx --no-res --show-bad-code -d decompiled DiPlay0.3.3.apk || true
           mkdir -p bt-decompiled
           if [ -f decoded/assets/hotspot/bt.dex ]; then jadx/bin/jadx --show-bad-code -d bt-decompiled decoded/assets/hotspot/bt.dex || true; fi
+      - name: Patch hotspot Smali and rebuild APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/patch_diplay_hotspot.py
+          python3 scripts/patch_diplay_hotspot.py decoded
+          mkdir -p build
+          java -jar apktool.jar b decoded -o build/DiPlay-v0.3.3-hotspot-hardened-unsigned.apk
+          unzip -t build/DiPlay-v0.3.3-hotspot-hardened-unsigned.apk
+          sha256sum DiPlay0.3.3.apk build/DiPlay-v0.3.3-hotspot-hardened-unsigned.apk | tee build/SHA256.txt
       - name: Package decoded smali and source
         shell: bash
         run: |
@@ -45,9 +56,11 @@ jobs:
           cp -a bt-decompiled/sources/. report/source/ 2>/dev/null || true
           cp -a decoded/AndroidManifest.xml report/
           cp DiPlay0.3.3.apk report/
-          sha256sum DiPlay0.3.3.apk > report/SHA256.txt
+          cp build/SHA256.txt report/
       - uses: actions/upload-artifact@v4
         with:
-          name: diplay-0.3.3-smali-source
-          path: report/
+          name: diplay-0.3.3-smali-source-and-patched-unsigned
+          path: |
+            report/
+            build/DiPlay-v0.3.3-hotspot-hardened-unsigned.apk
           retention-days: 14
