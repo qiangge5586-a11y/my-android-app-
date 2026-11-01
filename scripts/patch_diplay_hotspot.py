@@ -134,23 +134,36 @@ text = text[:match.start(2)] + smali_string(new_lit) + text[match.end(2):]
 CFG.write_text(text, encoding="utf-8")
 
 # Capture the framework Wi-Fi state before marking the system as touched.
-# If the preflight cleanup/check fails, teardown must know the true prior state.
-wifi_capture = (
-    "    invoke-direct {v1}, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->readFrameworkWifiOn()Z\\n"
-    "    move-result v0\\n"
-    "    iput-boolean v0, v1, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->wifiWasOn:Z\\n"
-)
-touched_anchor = "    iput-boolean v7, v1, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->touchedSystem:Z\\n"
-if MGR.read_text(encoding="utf-8").count(touched_anchor) != 1:
-    raise SystemExit("expected one touchedSystem activation point")
+# Work inside startHotspot only; register allocation can differ between builds.
 manager_text = MGR.read_text(encoding="utf-8")
-if manager_text.count(wifi_capture) != 1:
-    raise SystemExit("expected one original Wi-Fi state capture block")
-manager_text = manager_text.replace(wifi_capture, "", 1)
-manager_text = manager_text.replace(touched_anchor, wifi_capture + touched_anchor, 1)
-if manager_text.find(wifi_capture) > manager_text.find(touched_anchor):
+method_start = manager_text.find(".method private final startHotspot(")
+if method_start < 0:
+    raise SystemExit("startHotspot method not found")
+method_end = manager_text.find(".end method", method_start)
+if method_end < 0:
+    raise SystemExit("startHotspot method is unterminated")
+method = manager_text[method_start:method_end]
+read_pattern = re.compile(
+    r"(?m)^([ \\t]*)invoke-direct \\{(?P<reg>[vp]\\d+)\\}, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->readFrameworkWifiOn\\(\\)Z\\n"
+    r"[ \\t]*move-result (?P<result>[vp]\\d+)\\n"
+    r"[ \\t]*iput-boolean (?P=result), (?P=reg), Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->wifiWasOn:Z\\n"
+)
+reads = list(read_pattern.finditer(method))
+if len(reads) != 1:
+    raise SystemExit(f"expected one original Wi-Fi state capture in startHotspot, got {len(reads)}")
+read_block = reads[0].group(0)
+method = method[:reads[0].start()] + method[reads[0].end():]
+touched_pattern = re.compile(
+    r"(?m)^[ \\t]*iput-boolean [vp]\\d+, [vp]\\d+, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->touchedSystem:Z\\n"
+)
+touched = list(touched_pattern.finditer(method))
+if len(touched) != 1:
+    raise SystemExit(f"expected one touchedSystem activation in startHotspot, got {len(touched)}")
+method = method[:touched[0].start()] + read_block + method[touched[0].start():]
+manager_text = manager_text[:method_start] + method + manager_text[method_end:]
+if manager_text.find(read_block, method_start) > manager_text.find("touchedSystem:Z", method_start):
     raise SystemExit("Wi-Fi state capture was not moved before system mutation")
-MGR.write_text(manager_text, encoding="utf-8")
+
 
 for p in (CFG, MGR):
     t = p.read_text(encoding="utf-8")
