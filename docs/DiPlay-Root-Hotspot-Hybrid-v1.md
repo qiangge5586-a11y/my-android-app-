@@ -59,7 +59,7 @@ No real-car validation is claimed until the acceptance tests are performed on th
 - Hostapd is launched in foreground mode under the background shell job, with its PID and owner identity recorded. Startup failure evidence is captured in the dedicated DiPlay log; log-tail output uses POSIX awk rather than `tail`.
 - dnsmasq startup now has an owner record written only after its PID, process start time, executable identity, and session token are checked. Startup aborts if the root-shell command reports that validation failed.
 - `validateReady()` now checks the owned hostapd process, the owned dnsmasq process, and the wlan0 address before allowing publication.
-- Teardown now explicitly disables framework Wi-Fi when the captured pre-start state was OFF, while retaining the existing enable path when it was ON; both states are restored symmetrically after the AP interface is brought down.
+- Framework Wi-Fi restoration currently re-enables `svc wifi` only when it was ON before startup; when it was OFF, the backend does not issue an enable command. The AP teardown still brings `wlan0` down unconditionally, so restoration of the interface's pre-start administrative UP/DOWN state remains an open issue and is not claimed as complete.
 - The read-only diagnostics script is compatible with older toolboxes by using graceful command fallbacks and avoiding GNU-only tail/head/sed dependencies.
 
 ## CI result
