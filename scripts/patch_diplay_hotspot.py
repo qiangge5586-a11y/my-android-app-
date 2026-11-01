@@ -93,21 +93,22 @@ for path in (CFG, MGR):
 
 # Extend the existing Kotlin binary probe to cover vendor/ODM layouts.
 # The manager already probes and parses hostapd/dnsmasq paths; preserve that flow.
-init_old = '''    const/4 v0, 0x4
-    new-array v0, v0, [Ljava/lang/String;
-'''
-init_new = '''    const/4 v0, 0x7
-    new-array v0, v0, [Ljava/lang/String;
-'''
 config_text = CFG.read_text(encoding="utf-8")
-if config_text.count(init_old) != 1:
-    raise SystemExit("binary directory initializer did not match expected 4-entry array")
-config_text = config_text.replace(init_old, init_new, 1)
-old_bin = '''    const-string v1, "/bin"
-    const/4 v2, 0x3
-    aput-object v1, v0, v2
-'''
-new_bin = '''    const-string v1, "/vendor/bin/hw"
+clinit_start = config_text.find(".method static constructor <clinit>()V")
+clinit_end = config_text.find(".end method", clinit_start)
+if clinit_start < 0 or clinit_end < 0:
+    raise SystemExit("HostapdConfig static initializer not found")
+clinit = config_text[clinit_start:clinit_end]
+clinit, count = re.subn(
+    r"(const/4 v0, 0x)4\\s+(new-array v0, v0, \\[Ljava/lang/String;)",
+    r"\\g<1>7\\n\\n    \\2",
+    clinit,
+    count=1,
+)
+if count != 1:
+    raise SystemExit("binary directory array size was not found in static initializer")
+old_bin_pattern = r'const-string v1, "/bin"\\s+const/4 v2, 0x3\\s+aput-object v1, v0, v2'
+new_bin = '''const-string v1, "/vendor/bin/hw"
     const/4 v2, 0x3
     aput-object v1, v0, v2
 
@@ -121,11 +122,11 @@ new_bin = '''    const-string v1, "/vendor/bin/hw"
 
     const-string v1, "/bin"
     const/4 v2, 0x6
-    aput-object v1, v0, v2
-'''
-if config_text.count(old_bin) != 1:
-    raise SystemExit("binary directory /bin initializer did not match expected position")
-config_text = config_text.replace(old_bin, new_bin, 1)
+    aput-object v1, v0, v2'''
+clinit, count = re.subn(old_bin_pattern, lambda _: new_bin, clinit, count=1)
+if count != 1:
+    raise SystemExit("binary directory /bin entry was not found in static initializer")
+config_text = config_text[:clinit_start] + clinit + config_text[clinit_end:]
 CFG.write_text(config_text, encoding="utf-8")
 
 # Readiness must only count the hostapd process registered by this DiPlay session.
