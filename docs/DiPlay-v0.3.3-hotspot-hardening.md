@@ -87,7 +87,7 @@ su
 sh /sdcard/Download/collect_civic_hotspot_diag.sh
 ```
 
-If the script is stored elsewhere, adjust only the script path. Review the output before sharing it; it is designed to omit SSIDs, passwords, MAC addresses, and DHCP lease contents. The most important checks are whether hostapd exists, whether its build supports the PID-file option, whether the driver advertises AP mode, and whether wlan0 is the correct AP interface.
+If the script is stored elsewhere, adjust only the script path. Review the output before sharing it; it is designed to omit SSIDs, passwords, MAC addresses, and DHCP lease contents. The most important checks are whether hostapd exists, whether the driver advertises AP mode, and whether wlan0 is the correct AP interface. The revised launcher runs hostapd in the foreground as a child process and records its shell-launched PID, so it does not depend on hostapd's optional `-P` PID-file argument.
 
 ## Acceptance tests
 
@@ -147,8 +147,7 @@ help output so the presence or absence of `-P` can be checked. It does not
 start or stop Wi-Fi, hostapd, or dnsmasq.
 
 Important remaining validation:
-- The current patch uses hostapd `-P`; compatibility with the target binary is
-  unconfirmed until its actual help output is collected.
+- The launcher no longer depends on hostapd `-P`; it runs hostapd in the foreground and tracks the exact child PID. The target binary and driver still require device validation.
 - The runtime directory is a dedicated DiPlay-owned directory guarded by a
   lock and session token; it is not yet a unique nested directory per run.
 - No AP/phone/DHCP success has been verified on the vehicle.
