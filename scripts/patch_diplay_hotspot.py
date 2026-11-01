@@ -246,7 +246,13 @@ replace_method_literal(
     MGR,
     ".method public validateReady()V",
     "    if-lt v0, v1, :cond_0",
-    "    if-lt v0, v1, :cond_0\\n\\n    invoke-direct {p0}, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->dnsmasqProcessAlive()Z\\n\\n    move-result v0\\n\\n    if-eqz v0, :cond_0",
+    """    if-lt v0, v1, :cond_0
+
+    invoke-direct {p0}, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->dnsmasqProcessAlive()Z
+
+    move-result v0
+
+    if-eqz v0, :cond_0""",
     "validateReady dnsmasq ownership check",
 )
 replace_method_literal(
