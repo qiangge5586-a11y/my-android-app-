@@ -145,7 +145,7 @@ public class MainActivity extends Activity {
             "echo __HOSTAPD_VERSION__; H=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/hostapd ]; then H=$d/hostapd; break; fi; done; if [ -n \"$H\" ]; then $H -v 2>&1; fi; " +
             "echo __IW__; IW=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/iw ]; then IW=$d/iw; break; fi; done; if [ -n \"$IW\" ]; then echo IW_PATH=$IW; $IW dev 2>&1; $IW list 2>&1; $IW dev wlan0 info 2>&1; $IW dev wlan0 station dump 2>&1; else echo IW_NOT_FOUND; fi; " +
             "echo __WIFI_STATE__; settings get global wifi_on 2>&1; getprop init.svc.wpa_supplicant; getprop init.svc.hostapd; getprop init.svc.dnsmasq; " +
-            "echo __PROCESS_TABLE__; ps 2>&1; echo __PROCESS_TABLE_A__; ps -A 2>&1; " +
+            "echo __DAEMON_PROCESS_TABLE__; ps 2>&1 | grep -E '[h]ostapd|[d]nsmasq' 2>&1; echo __DAEMON_PROCESS_TABLE_A__; ps -A 2>&1 | grep -E '[h]ostapd|[d]nsmasq' 2>&1; " +
             "echo __HOTSPOT_FILES__; for f in /data/misc/wifi/hostapd.conf /data/misc/wifi/hostapd.pid /data/misc/wifi/dnsmasq.pid /data/misc/wifi/dnsmasq.leases /data/misc/wifi/softap.conf /data/misc/wifi/wpa_supplicant.conf; do if [ -e \"$f\" ]; then ls -ld \"$f\"; else echo MISSING:$f; fi; done; " +
             "echo __PID_FILES__; for f in /data/misc/wifi/hostapd.pid /data/misc/wifi/dnsmasq.pid; do if [ -r \"$f\" ]; then echo $f=$(cat \"$f\" 2>/dev/null); fi; done; " +
             "echo __MODULES__; cat /proc/modules 2>&1";
