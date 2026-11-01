@@ -117,7 +117,7 @@ for path in (CFG, MGR):
     path.write_text(text, encoding="utf-8")
 
 # Resolve firmware-specific binary locations without assuming /system/bin.
-replace_binary_path(MGR, "hostapd", [
+replace_binary_path(CFG, "hostapd", [
     "/system/bin/hostapd", "/system/xbin/hostapd", "/vendor/bin/hostapd",
     "/vendor/bin/hw/hostapd", "/system_ext/bin/hostapd", "/odm/bin/hostapd", "/bin/hostapd",
 ])
