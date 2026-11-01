@@ -168,7 +168,7 @@ if len(save_hits) != 1:
     raise SystemExit(f"expected one wifiWasOn store after state read, got {len(save_hits)}")
 save_i = save_hits[0]
 save_parts = method_lines[save_i].strip().split()
-if len(save_parts) < 4 or save_parts[1] != result_reg or save_parts[2].rstrip(",") != receiver:
+if len(save_parts) < 4 or save_parts[1].rstrip(",") != result_reg or save_parts[2].rstrip(",") != receiver:
     raise SystemExit("Wi-Fi state read/store register relationship did not match")
 read_block = method_lines[invoke_i:save_i + 1]
 del method_lines[invoke_i:save_i + 1]
