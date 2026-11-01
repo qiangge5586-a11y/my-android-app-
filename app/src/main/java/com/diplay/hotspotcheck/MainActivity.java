@@ -72,10 +72,11 @@ public class MainActivity extends Activity {
         r.append("内核: ").append(readFile("/proc/version")).append("\n\n");
         String shell = "echo __ROOT__; id; " +
             "echo __NET__; ls /sys/class/net; " +
+            "echo __WLAN0_PRESENT__; if [ -d /sys/class/net/wlan0 ]; then echo WLAN0_PRESENT=yes; else echo WLAN0_PRESENT=no; fi; " +
             "echo __WLAN__; ls -ld /sys/class/net/wlan0 /sys/class/net/wlan0/phy80211 /sys/class/net/wlan0/wireless 2>&1; " +
             "echo __WIRELESS__; cat /proc/net/wireless 2>&1; " +
             "echo __BINS__; for x in hostapd dnsmasq iw; do for d in /system/bin /system/xbin /vendor/bin /sbin /bin; do if [ -x $d/$x ]; then echo $x=$d/$x; break; fi; done; done; " +
-            "echo __IW__; if [ -x /system/bin/iw ]; then /system/bin/iw list 2>&1; elif [ -x /system/xbin/iw ]; then /system/xbin/iw list 2>&1; elif [ -x /vendor/bin/iw ]; then /vendor/bin/iw list 2>&1; else echo IW_NOT_FOUND; fi; " +
+            "echo __IW__; IW=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/iw ]; then IW=$d/iw; break; fi; done; if [ -n \"$IW\" ]; then echo IW_PATH=$IW; $IW list 2>&1; else echo IW_NOT_FOUND; fi; " +
             "echo __MODULES__; cat /proc/modules 2>&1";
         String result = runSu(shell);
         r.append(result);
@@ -84,7 +85,7 @@ public class MainActivity extends Activity {
         boolean root = result.contains("uid=0");
         boolean ap = result.matches("(?s).*\\*\\s+AP(?:\\s|\\r|\\n).*");
         boolean iwList = result.contains("Supported interface modes");
-        boolean wlan = result.contains("wlan0");
+        boolean wlan = result.contains("WLAN0_PRESENT=yes");
         boolean hostapd = result.contains("hostapd=/");
         boolean dnsmasq = result.contains("dnsmasq=/");
         if (!root) r.append("❌ Root 未确认：su 未返回 uid=0。\n");
