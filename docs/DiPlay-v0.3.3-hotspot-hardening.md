@@ -76,6 +76,19 @@ Do not report a complete connection based only on `AP_READY`. Include a bounded 
 - Measure startup time, DHCP lease acquisition time, reconnect success, and session uptime before changing channel or power behavior.
 - Do not introduce automatic 5 GHz fallback or band switching.
 
+## Read-only head-unit capability check
+
+Before changing the hotspot startup sequence, collect the actual vehicle driver's capabilities. The repository now includes `scripts/collect_civic_hotspot_diag.sh`. It is read-only: it reports the rooted Android build, wlan0 driver, hostapd/dnsmasq binaries and versions, advertised wireless interface modes, relevant kernel messages, and current Wi-Fi service state. It does not change Wi-Fi state, launch services, or print hotspot passwords.
+
+On the rooted head unit, copy the script to the device and run:
+
+```sh
+su
+sh /sdcard/Download/collect_civic_hotspot_diag.sh
+```
+
+If the script is stored elsewhere, adjust only the script path. Review the output before sharing it; it is designed to omit SSIDs, passwords, MAC addresses, and DHCP lease contents. The most important checks are whether hostapd exists, whether its build supports the PID-file option, whether the driver advertises AP mode, and whether wlan0 is the correct AP interface.
+
 ## Acceptance tests
 
 1. Starting DiPlay does not terminate a pre-existing, unrelated hostapd or dnsmasq process.
