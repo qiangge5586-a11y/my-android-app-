@@ -222,28 +222,41 @@ replace_method_literal(MGR, ".method private final startHotspot(", dns_launch, d
 # Never interpret an unreadable Wi-Fi state as OFF. If settings cannot return
 # exactly 0 or 1, abort before touchedSystem is set so teardown cannot apply
 # a guessed state and unexpectedly disable/enable the radio.
-wifi_state_old = """    const-string v2, "1"
+# Never interpret an unreadable Wi-Fi state as OFF. Find the comparison
+# block structurally because apktool releases can vary harmless line metadata.
+def patch_wifi_state_reader(path: Path) -> None:
+    source = path.read_text(encoding="utf-8")
+    signature = ".method private final readFrameworkWifiOn()Z"
+    start = source.find(signature)
+    end = source.find(".end method", start)
+    if start < 0 or end < 0:
+        raise SystemExit("readFrameworkWifiOn method not found or unterminated")
+    chunk = source[start:end]
+    pattern = re.compile(
+        r'(?m)^    const-string(?:/jumbo)? v2, "1"\n\n'
+        r'    invoke-static \{v1, v2\}, Lkotlin/jvm/internal/Intrinsics;->areEqual\(Ljava/lang/Object;Ljava/lang/Object;\)Z\n\n'
+        r'    move-result v1\n\n    return v1'
+    )
+    matches = list(pattern.finditer(chunk))
+    if len(matches) != 1:
+        raise SystemExit(f"readFrameworkWifiOn: expected one Wi-Fi ON comparison block, got {len(matches)}")
+    new_block = """    move-object v3, v1
 
-    invoke-static {v1, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+    const-string v2, "1"
+
+    invoke-static {v3, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
 
     move-result v1
 
-    return v1"""
-wifi_state_new = """    const-string v2, "1"
-
-    invoke-static {v1, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
-
-    move-result v3
-
-    if-nez v3, :diplay_wifi_state_on
+    if-nez v1, :diplay_wifi_state_on
 
     const-string v2, "0"
 
-    invoke-static {v1, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+    invoke-static {v3, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
 
-    move-result v3
+    move-result v1
 
-    if-nez v3, :diplay_wifi_state_off
+    if-nez v1, :diplay_wifi_state_off
 
     new-instance v0, Ljava/lang/IllegalStateException;
 
@@ -262,13 +275,12 @@ wifi_state_new = """    const-string v2, "1"
     const/4 v1, 0x0
 
     return v1"""
-replace_method_literal(
-    MGR,
-    ".method private final readFrameworkWifiOn()Z",
-    wifi_state_old,
-    wifi_state_new,
-    "fail-safe original Wi-Fi state detection",
-)
+    m = matches[0]
+    chunk = chunk[:m.start()] + new_block + chunk[m.end():]
+    path.write_text(source[:start] + chunk + source[end:], encoding="utf-8")
+
+
+patch_wifi_state_reader(MGR)
 
 # A subsequent readiness check must also verify that this session's dnsmasq
 # process is still alive; hostapd + interface address alone is insufficient.
