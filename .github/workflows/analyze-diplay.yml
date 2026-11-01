@@ -54,9 +54,9 @@ jobs:
           python3 -m py_compile scripts/patch_diplay_hotspot.py
           python3 scripts/patch_diplay_hotspot.py decoded
           mkdir -p build
-          java -jar apktool.jar b decoded -o build/DiPlay-v0.3.3-hotspot-hardened-unsigned.apk
-          unzip -t build/DiPlay-v0.3.3-hotspot-hardened-unsigned.apk
-          sha256sum DiPlay0.3.3.apk build/DiPlay-v0.3.3-hotspot-hardened-unsigned.apk | tee build/SHA256.txt
+          java -jar apktool.jar b decoded -o build/DiPlay-Root-Hotspot-Hybrid-v1-unsigned.apk
+          unzip -t build/DiPlay-Root-Hotspot-Hybrid-v1-unsigned.apk
+          sha256sum DiPlay0.3.3.apk build/DiPlay-Root-Hotspot-Hybrid-v1-unsigned.apk | tee build/SHA256.txt
       - name: Align, sign and verify APK
         shell: bash
         run: |
@@ -68,9 +68,9 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
           "$SDKMANAGER" --install "build-tools;35.0.0"
           BT="$SDK_ROOT/build-tools/35.0.0"
-          UNSIGNED="build/DiPlay-v0.3.3-hotspot-hardened-unsigned.apk"
-          ALIGNED="build/DiPlay-v0.3.3-hotspot-hardened-aligned.apk"
-          SIGNED="build/DiPlay-v0.3.3-hotspot-hardened.apk"
+          UNSIGNED="build/DiPlay-Root-Hotspot-Hybrid-v1-unsigned.apk"
+          ALIGNED="build/DiPlay-Root-Hotspot-Hybrid-v1-aligned.apk"
+          SIGNED="build/DiPlay-Root-Hotspot-Hybrid-v1-test.apk"
           "$BT/zipalign" -f -p 4 "$UNSIGNED" "$ALIGNED"
           keytool -genkeypair -noprompt -keystore build/diplay-test-signing.jks \
             -storepass "diplay-build-test" -keypass "diplay-build-test" \
@@ -83,7 +83,7 @@ jobs:
           "$BT/aapt" dump badging "$SIGNED" | grep "^package:" | tee build/package-info.txt
           grep -q "name='com.shihab.diplay'" build/package-info.txt
           sha256sum "$SIGNED" >> build/SHA256.txt
-          rm -f build/diplay-test-signing.jks build/DiPlay-v0.3.3-hotspot-hardened-aligned.apk
+          rm -f build/diplay-test-signing.jks build/DiPlay-Root-Hotspot-Hybrid-v1-aligned.apk
       - name: Package decoded smali and source
         shell: bash
         run: |
@@ -97,10 +97,10 @@ jobs:
           cp build/SHA256.txt report/
       - uses: actions/upload-artifact@v4
         with:
-          name: diplay-0.3.3-hotspot-hardened-signed
+          name: diplay-root-hotspot-hybrid-v1-test
           path: |
             report/
-            build/DiPlay-v0.3.3-hotspot-hardened.apk
+            build/DiPlay-Root-Hotspot-Hybrid-v1-test.apk
             build/SHA256.txt
             build/signature-verification.txt
             build/package-info.txt
