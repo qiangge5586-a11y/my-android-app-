@@ -190,8 +190,12 @@ CFG.write_text(text, encoding="utf-8")
 # dnsmasqCommand writes an owner record only after checking its PID, /proc start
 # time, executable identity, and current session token. Require RootShell success.
 dns_launch = '''    invoke-virtual {v0, v4, v10, v11}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
+
+    const/4 v4, 0x1
 '''
-dns_launch_checked = dns_launch + '''    move-result-object v4
+dns_launch_checked = '''    invoke-virtual {v0, v4, v10, v11}, Lcom/shilapi/xcertplay/network/RootShell;->run(Ljava/lang/String;J)Lcom/shilapi/xcertplay/network/RootShell$Result;
+
+    move-result-object v4
 
     invoke-virtual {v4}, Lcom/shilapi/xcertplay/network/RootShell$Result;->getSuccess()Z
 
@@ -208,6 +212,8 @@ dns_launch_checked = dns_launch + '''    move-result-object v4
     throw v4
 
     :diplay_dnsmasq_owner_ok
+
+    const/4 v4, 0x1
 '''
 replace_method_literal(MGR, ".method private final startHotspot(", dns_launch, dns_launch_checked, "dnsmasq launch result validation")
 
