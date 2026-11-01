@@ -7,6 +7,7 @@ on:
       - 'DiPlay0.3.3.apk'
       - 'docs/DiPlay-v0.3.3-hotspot-hardening.md'
       - 'scripts/patch_diplay_hotspot.py'
+      - 'scripts/collect_civic_hotspot_diag.sh'
   workflow_dispatch:
 
 permissions:
@@ -36,6 +37,12 @@ jobs:
           jadx/bin/jadx --no-res --show-bad-code -d decompiled DiPlay0.3.3.apk || true
           mkdir -p bt-decompiled
           if [ -f decoded/assets/hotspot/bt.dex ]; then jadx/bin/jadx --show-bad-code -d bt-decompiled decoded/assets/hotspot/bt.dex || true; fi
+      - name: Validate read-only head-unit diagnostic script
+        shell: bash
+        run: |
+          set -euo pipefail
+          sh -n scripts/collect_civic_hotspot_diag.sh
+          ! grep -Eq '(^|[;&|[:space:]])(svc[[:space:]]+wifi[[:space:]]+(disable|enable)|ifconfig[[:space:]]+wlan0[[:space:]]+down|ip[[:space:]]+link[[:space:]]+set[[:space:]]+wlan0[[:space:]]+down|hostapd[[:space:]]+-B|dnsmasq[[:space:]])' scripts/collect_civic_hotspot_diag.sh
       - name: Patch hotspot Smali and rebuild APK
         shell: bash
         run: |
