@@ -8,6 +8,8 @@ on:
       - 'docs/DiPlay-v0.3.3-hotspot-hardening.md'
       - 'scripts/patch_diplay_hotspot.py'
       - 'scripts/collect_civic_hotspot_diag.sh'
+      - 'scripts/collect_civic_hotspot_diag_hybrid.sh'
+      - 'docs/DiPlay-Root-Hotspot-Hybrid-v1.md'
   workflow_dispatch:
 
 permissions:
@@ -42,7 +44,9 @@ jobs:
         run: |
           set -euo pipefail
           sh -n scripts/collect_civic_hotspot_diag.sh
+          sh -n scripts/collect_civic_hotspot_diag_hybrid.sh
           ! grep -Eq '^[[:space:]]*(svc[[:space:]]+wifi[[:space:]]+(disable|enable)|ifconfig[[:space:]]+wlan0[[:space:]]+down|ip[[:space:]]+link[[:space:]]+set[[:space:]]+wlan0[[:space:]]+down|hostapd[[:space:]]+-B|dnsmasq[[:space:]]+-)' scripts/collect_civic_hotspot_diag.sh
+          ! grep -Eq '^[[:space:]]*(svc[[:space:]]+wifi[[:space:]]+(disable|enable)|ifconfig[[:space:]]+wlan0[[:space:]]+down|ip[[:space:]]+link[[:space:]]+set[[:space:]]+wlan0[[:space:]]+down|hostapd[[:space:]]+-B|dnsmasq[[:space:]]+-)' scripts/collect_civic_hotspot_diag_hybrid.sh
       - name: Patch hotspot Smali and rebuild APK
         shell: bash
         run: |
