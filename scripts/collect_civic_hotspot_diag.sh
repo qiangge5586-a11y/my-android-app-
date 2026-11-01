@@ -15,8 +15,8 @@ last_lines() {
 }
 filter_wifi() {
   awk '
-    BEGIN { IGNORECASE=1 }
-    /wlan|wifi|cfg80211|mac80211|hostapd|firmware|nl80211|ap-sta|failed|error/ { print }
+    { line=tolower($0) }
+    line ~ /wlan|wifi|cfg80211|mac80211|hostapd|firmware|nl80211|ap-sta|failed|error/ { print }
   '
 }
 
@@ -77,8 +77,8 @@ section "CURRENT SERVICE STATE"
 if have svc; then svc wifi status 2>&1; else echo "svc unavailable"; fi
 if have ps; then
   ps 2>/dev/null | awk '
-    BEGIN { IGNORECASE=1 }
-    /hostapd|dnsmasq|wpa_supplicant|wifi/ && !/awk/ { print }
+    { line=tolower($0) }
+    line ~ /hostapd|dnsmasq|wpa_supplicant|wifi/ && line !~ /awk/ { print }
   '
 else echo "ps unavailable"; fi
 
