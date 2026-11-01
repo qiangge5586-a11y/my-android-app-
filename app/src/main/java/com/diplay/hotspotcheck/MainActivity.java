@@ -138,9 +138,12 @@ public class MainActivity extends Activity {
             "echo __NET__; ls /sys/class/net; " +
             "echo __WLAN0_PRESENT__; if [ -d /sys/class/net/wlan0 ]; then echo WLAN0_PRESENT=yes; else echo WLAN0_PRESENT=no; fi; " +
             "echo __WLAN__; ls -ld /sys/class/net/wlan0 /sys/class/net/wlan0/phy80211 /sys/class/net/wlan0/wireless 2>&1; " +
+            "echo __DRIVER_LINK__; ls -l /sys/class/net/wlan0/device/driver /sys/class/net/wlan0/device/driver/module 2>&1; " +
             "echo __WIRELESS__; cat /proc/net/wireless 2>&1; " +
+            "echo __WIFI_PROPERTIES__; getprop wifi.interface; getprop wifi.driver.status; getprop wlan.driver.status; getprop wifi.driver; " +
             "echo __BINS__; for x in hostapd dnsmasq iw; do for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/$x ]; then echo $x=$d/$x; break; fi; done; done; " +
-            "echo __IW__; IW=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/iw ]; then IW=$d/iw; break; fi; done; if [ -n \"$IW\" ]; then echo IW_PATH=$IW; $IW list 2>&1; else echo IW_NOT_FOUND; fi; " +
+            "echo __HOSTAPD_VERSION__; H=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/hostapd ]; then H=$d/hostapd; break; fi; done; if [ -n \"$H\" ]; then $H -v 2>&1; fi; " +
+            "echo __IW__; IW=; for d in /system/bin /system/xbin /vendor/bin /vendor/xbin /sbin /bin; do if [ -x $d/iw ]; then IW=$d/iw; break; fi; done; if [ -n \"$IW\" ]; then echo IW_PATH=$IW; $IW dev 2>&1; $IW list 2>&1; else echo IW_NOT_FOUND; fi; " +
             "echo __MODULES__; cat /proc/modules 2>&1";
         String result = runSu(shell);
         r.append(result);
