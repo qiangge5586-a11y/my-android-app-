@@ -110,6 +110,7 @@ The current patch:
 - namespaces DiPlay PID, log, lease, and staged-config paths under `/data/local/tmp/diplay-root-hotspot`;
 - associates hostapd/dnsmasq with a per-run session ID, PID, and `/proc` start time;
 - uses bounded TERM followed by identity-checked KILL for only recorded DiPlay-owned processes;
+- checks startup readiness against the current session's recorded hostapd PID, session ID, `/proc` start time, and executable identity, rather than treating any system-wide `hostapd` process as success;
 - disables the old global `wpa_supplicant` kill command;
 - backs up `/data/misc/wifi/hostapd.conf` and restores it only if its content hash still matches the file written by this session;
 - retains 2.4 GHz-only configuration, `wlan0`, gateway `192.168.42.1`, DHCP pool `192.168.42.10-192.168.42.50`, WPA2/CCMP, and eight-client limit;
@@ -117,9 +118,10 @@ The current patch:
 
 **Important remaining risks / not yet verified:**
 1. The `wlan0` down/up and framework Wi-Fi restoration sequence must be tested on the actual 2019 Civic head unit. Android vendor Wi-Fi drivers differ; an APK build cannot prove driver support or successful hostapd startup.
-2. The exact hostapd binary's support for `-P` PID-file mode must be confirmed on the head unit.
-3. DHCP lease acquisition and phone reconnect have not yet been verified.
-4. CarPToCarL's application-level session handshake is not proven by DiPlay's AP-ready state.
-5. The rebuilt APK uses a test signing key, not the original developer key. It may not install as an in-place update over the original app; back up DiPlay settings/data before considering uninstall/reinstall.
+2. The current readiness probe has been narrowed to DiPlay's own recorded hostapd process. It still needs device validation to confirm the target hostapd writes the configured PID file and the driver reaches AP mode.
+3. The exact hostapd binary's support for `-P` PID-file mode must be confirmed on the head unit.
+4. DHCP lease acquisition and phone reconnect have not yet been verified.
+5. CarPToCarL's application-level session handshake is not proven by DiPlay's AP-ready state.
+6. The rebuilt APK uses a test signing key, not the original developer key. It may not install as an in-place update over the original app; back up DiPlay settings/data before considering uninstall/reinstall.
 
 The previous Actions run (run ID `41267603857`) completed successfully, but the generated artifact is only a build artifact and has not passed physical-device acceptance tests. The next release gate is on-device diagnostics, not another speculative feature change.
