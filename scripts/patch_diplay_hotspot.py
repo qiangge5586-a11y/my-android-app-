@@ -133,6 +133,25 @@ new_lit = old_lit + f''' sleep 1; p=$(cat {BASE}/dnsmasq.pid 2>/dev/null); case 
 text = text[:match.start(2)] + smali_string(new_lit) + text[match.end(2):]
 CFG.write_text(text, encoding="utf-8")
 
+# Capture the framework Wi-Fi state before marking the system as touched.
+# If the preflight cleanup/check fails, teardown must know the true prior state.
+wifi_capture = (
+    "    invoke-direct {v1}, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->readFrameworkWifiOn()Z\\n"
+    "    move-result v0\\n"
+    "    iput-boolean v0, v1, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->wifiWasOn:Z\\n"
+)
+touched_anchor = "    iput-boolean v7, v1, Lcom/shilapi/xcertplay/network/HostapdHotspotManager;->touchedSystem:Z\\n"
+if MGR.read_text(encoding="utf-8").count(touched_anchor) != 1:
+    raise SystemExit("expected one touchedSystem activation point")
+manager_text = MGR.read_text(encoding="utf-8")
+if manager_text.count(wifi_capture) != 1:
+    raise SystemExit("expected one original Wi-Fi state capture block")
+manager_text = manager_text.replace(wifi_capture, "", 1)
+manager_text = manager_text.replace(touched_anchor, wifi_capture + touched_anchor, 1)
+if manager_text.find(wifi_capture) > manager_text.find(touched_anchor):
+    raise SystemExit("Wi-Fi state capture was not moved before system mutation")
+MGR.write_text(manager_text, encoding="utf-8")
+
 for p in (CFG, MGR):
     t = p.read_text(encoding="utf-8")
     for bad in ("kill -9 $2", "ps | while read line", "killall hostapd", "pkill hostapd"):
