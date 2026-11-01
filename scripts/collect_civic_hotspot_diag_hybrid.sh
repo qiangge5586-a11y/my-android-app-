@@ -71,8 +71,8 @@ else echo "iw not installed; AP capability cannot be confirmed from iw"; fi
 section "KERNEL DRIVER AND MODULE HINTS"
 if have dmesg; then
   dmesg 2>/dev/null | awk '
-    BEGIN { IGNORECASE=1 }
-    /wlan|wifi|cfg80211|mac80211|hostapd|firmware|nl80211/ { line[NR % 120]=$0; n++ }
+    
+    tolower($0) ~ /wlan|wifi|cfg80211|mac80211|hostapd|firmware|nl80211/ { line[NR % 120]=$0; n++ }
     END {
       # Print the most recent matching lines retained in source order.
       first = n > 120 ? n - 119 : 1
@@ -88,7 +88,7 @@ if have svc; then svc wifi status 2>&1; else echo "svc unavailable"; fi
 if have ps; then
   ps 2>&1 | awk '
     BEGIN { IGNORECASE=1 }
-    /hostapd|dnsmasq|wpa_supplicant|wifi/ { print }
+    tolower($0) ~ /hostapd|dnsmasq|wpa_supplicant|wifi/ { print }
   '
 else echo "ps unavailable"; fi
 
@@ -122,7 +122,7 @@ section "KERNEL WIFI ERROR EVIDENCE"
 if have dmesg; then
   dmesg 2>/dev/null | awk '
     BEGIN { IGNORECASE=1 }
-    /nl80211|cfg80211|mac80211|wlan0|hostapd|firmware|AP-STA|failed|error/ { print }
+    tolower($0) ~ /nl80211|cfg80211|mac80211|wlan0|hostapd|firmware|ap-sta|failed|error/ { print }
   ' | last_lines 160
 else echo "dmesg unavailable"; fi
 
