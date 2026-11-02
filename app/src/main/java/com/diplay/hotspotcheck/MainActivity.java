@@ -136,8 +136,8 @@ public class MainActivity extends Activity {
         r.append("内核: ").append(readFile("/proc/version")).append("\n\n");
         r.append("\n===== Android 4.2 legacy SoftAP API preflight =====\n");
         r.append(LegacyHotspotProbe.inspect(this)).append("\n");
-        r.append("\\n===== Ecarx vendor SoftAP discovery =====\\n");
-        r.append(EcarxVendorProbe.inspect(this)).append("\\n");
+        r.append("\n===== Ecarx vendor SoftAP discovery =====\n");
+        r.append(EcarxVendorProbe.inspect(this)).append("\n");
         String shell = "echo __ROOT__; id; " +
             "echo __NET__; ls /sys/class/net; " +
             "echo __WLAN0_PRESENT__; if [ -d /sys/class/net/wlan0 ]; then echo WLAN0_PRESENT=yes; else echo WLAN0_PRESENT=no; fi; " +
