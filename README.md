@@ -4,9 +4,9 @@
 
 ## 检测项目
 - Android 版本、API、型号、板级、硬件、固件、内核
-- `su` 是否真正返回 `uid=0`
+- 普通 shell 可读取的系统信息（不申请 Root）
 - 网络接口、`wlan0`、`phy80211`、`/proc/net/wireless`
-- `iw list` 是否明确列出 `* AP`
+- `iw list` 是否明确列出 `* AP`（若设备允许普通应用读取）
 - 常见系统目录中的 `hostapd`、`dnsmasq`、`iw`
 - 内核模块列表
 
