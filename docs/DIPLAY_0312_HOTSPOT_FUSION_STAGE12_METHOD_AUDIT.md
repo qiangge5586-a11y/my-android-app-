@@ -24,16 +24,32 @@ The probe command contains these operations:
 
 This means a foreground diagnostic mechanism is already represented in v0.3.12. Do not add a duplicate probe blindly.
 
+### Additional instruction-order reconstruction
+
+A focused DEX instruction scan of `startHotspot` (code item offset 3,573,092; 1,689 code units) shows these relevant operations in method order. This is an instruction-order reconstruction, not a claim that every conditional branch executes on every attempt:
+
+1. Check root availability and probe the hostapd/dnsmasq binary paths.
+2. Invoke `HostapdConfig.killStaleScript()` before the later Wi-Fi/radio checks (around code-unit index 196).
+3. Read framework Wi-Fi state. If it is off, issue `svc wifi enable` (around index 229), then wait for the interface.
+4. If `wlan0` is still absent, call `WifiRadioHelper.run(...)` and wait again.
+5. Render a hostapd config, write an app-private `hostapd_full.conf`, then stage/copy it to the shared `/data/misc/wifi/hostapd.conf`.
+6. Issue `ifconfig wlan0 down`, then launch `hostapd -B` using the shared config.
+7. Poll the global hostapd process count, parse the launch PID, and inspect PID/process/log evidence.
+8. The method then contains the foreground `-dd -f` probe and appends its output as `fgProbe=` in the `hostapd: launch failed evidence:` diagnostic before constructing the `hostapd did not stay up` failure.
+
+The key safety finding is stronger than a mere string inventory: the method invokes global stale-process cleanup before startup and deliberately takes `wlan0` down before the daemon launch. These are live startup-path operations in the method body and must be addressed in any safe patch. The exact conditions governing each branch still require a complete control-flow decode.
+
 ### Limits and defects to investigate
 
-- This is a two-second liveness probe, not a general bounded-time supervisor.
+- The foreground probe is a two-second liveness test, not a general bounded-time supervisor.
 - The alive branch kills the probe PID and does not record a post-termination exit status.
 - The PID is the shell's background job PID; process identity after any daemonization must not be assumed.
 - The log path is fixed and shared between attempts.
 - The probe uses the shared system config path `/data/misc/wifi/hostapd.conf`.
-- The DEX string scan establishes that the command is referenced by this method, but does not alone prove the exact branch condition or every runtime execution path.
+- The normal startup path still uses global process-name cleanup and brings `wlan0` down before launch.
+- The DEX instruction scan identifies method order and invokes, but does not yet fully decode all branch predicates or exception edges.
 
-The next source-level task is to inspect the branch and result handling around this existing probe, then improve its ownership, timeout, log isolation, and result reporting without duplicating it.
+Do not add a duplicate diagnostic probe. The next source-level task is to replace the unsafe process/interface mutations, then improve ownership, timeout, log isolation, and result reporting around the existing probe.
 
 ## Confirmed v0.3.12 method string references
 
