@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         root.addView(title);
         TextView intro = new TextView(this);
-        intro.setText("只读取系统信息，不会开启/关闭 Wi-Fi，不会重启网卡，不会启动热点进程。点击检测后如有 Root 授权请求，请允许。");
+        intro.setText("只读取系统信息，不会开启/关闭 Wi-Fi，不会重启网卡，不会启动热点进程。点击检测即可；本工具不申请 Root 或 Shizuku。受系统权限限制的项目会标记为不可读取。");
         intro.setTextSize(14);
         intro.setPadding(0, 10, 0, 14);
         root.addView(intro);
@@ -134,6 +134,10 @@ public class MainActivity extends Activity {
         r.append("Android: ").append(Build.VERSION.RELEASE).append(" / API ").append(Build.VERSION.SDK_INT).append("\n");
         r.append("型号: ").append(Build.MODEL).append("\n板级: ").append(Build.BOARD).append("\n硬件: ").append(Build.HARDWARE).append("\n固件: ").append(Build.DISPLAY).append("\n");
         r.append("内核: ").append(readFile("/proc/version")).append("\n\n");
+        r.append("\n===== Android 4.2 legacy SoftAP API preflight =====\n");
+        r.append(LegacyHotspotProbe.inspect(this)).append("\n");
+        r.append("\n===== Ecarx vendor SoftAP discovery =====\n");
+        r.append(EcarxVendorProbe.inspect(this)).append("\n");
         String shell = "echo __ROOT__; id; " +
             "echo __NET__; ls /sys/class/net; " +
             "echo __WLAN0_PRESENT__; if [ -d /sys/class/net/wlan0 ]; then echo WLAN0_PRESENT=yes; else echo WLAN0_PRESENT=no; fi; " +
@@ -186,7 +190,7 @@ public class MainActivity extends Activity {
         Process p = null;
         Thread reader = null;
         try {
-            p = new ProcessBuilder("su", "-c", command).redirectErrorStream(true).start();
+            p = new ProcessBuilder("sh", "-c", command).redirectErrorStream(true).start();
             final Process process = p;
             reader = new Thread(new Runnable() {
                 @Override public void run() {
@@ -224,13 +228,13 @@ public class MainActivity extends Activity {
             if (exitCode == null) {
                 p.destroy();
                 try { p.getInputStream().close(); } catch (Exception ignored) {}
-                out.append("[su timeout after 20s]\n");
+                out.append("[shell timeout after 20s]\n");
             } else {
                 reader.join(1000);
-                out.append("[su exit=").append(exitCode).append("]\n");
+                out.append("[shell exit=").append(exitCode).append("]\n");
             }
         } catch (Exception e) {
-            out.append("Root 检测失败：").append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append('\n');
+            out.append("Shell 检测失败：").append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append('\n');
         } finally {
             if (p != null) p.destroy();
             if (reader != null) {
