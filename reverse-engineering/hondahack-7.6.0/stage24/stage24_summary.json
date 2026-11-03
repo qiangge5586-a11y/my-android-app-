@@ -1,0 +1,14 @@
+{
+  "stage": 24,
+  "semantic_instruction_rows_scanned": 196173,
+  "resolved_string_argument_sites": 233,
+  "methods_with_resolved_values": 82,
+  "resolved_string_values": 170,
+  "category_counts": {
+    "shared_preferences_write": 38,
+    "shared_preferences_read": 98,
+    "intent_filter_action": 96,
+    "intent_action": 1
+  },
+  "analysis": "intra-method linear constant propagation for const-string and move aliases; no CFG joins"
+}
