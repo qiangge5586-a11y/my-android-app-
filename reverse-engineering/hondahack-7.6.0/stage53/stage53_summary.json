@@ -1,0 +1,32 @@
+{
+  "stage": 53,
+  "callback_methods_indexed": 131,
+  "listener_registration_sites": 93,
+  "direct_internal_edges_from_callback_methods": 108,
+  "callback_classes_with_direct_internal_calls": 62,
+  "manifest_components": 27,
+  "components_with_listener_registrations": 14,
+  "component_classes_with_intent_bundle_api_sites": 12,
+  "listener_type_counts": {
+    "checked_change": 2,
+    "editor_action": 1,
+    "item_click": 5,
+    "item_selected": 5,
+    "key": 5,
+    "menu_click": 3,
+    "preference_change": 22,
+    "preference_click": 1,
+    "text_change": 1,
+    "touch": 1,
+    "view_click": 45,
+    "view_long_click": 2
+  },
+  "limitations": [
+    "callback method names are candidates, not proof of interface implementation",
+    "direct static invoke edges only",
+    "inherited/framework/reflection/JNI/dynamic dispatch omitted",
+    "listener resource ID is a nearest-constant heuristic",
+    "component attribution uses exact class descriptors",
+    "no source export or APK build"
+  ]
+}
