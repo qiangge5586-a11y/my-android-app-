@@ -1,0 +1,9 @@
+{
+  "stage": 33,
+  "unique_string_resource_ids": 469,
+  "string_value_rows": 2468,
+  "manifest_components_with_label_reference": 24,
+  "manifest_labels_resolved": 22,
+  "layout_include_references": 29,
+  "limitations": "Locale/config variants may exist; runtime UI text is not fully reconstructed."
+}
