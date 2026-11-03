@@ -1,0 +1,20 @@
+{
+  "stage": 21,
+  "methods_scanned": 11104,
+  "invoke_instructions_scanned": 46287,
+  "unique_invoked_method_refs": 11763,
+  "unique_target_classes": 2139,
+  "class_api_edges": 10439,
+  "risk_triage_categories": {
+    "reflection": 209,
+    "file_write_or_delete": 56,
+    "broadcasts": 59,
+    "network": 86,
+    "binder_ipc": 29,
+    "location": 4,
+    "process_execution": 6,
+    "audio_capture": 2
+  },
+  "risk_triage_rows": 451,
+  "dex_sha256": "3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319"
+}
