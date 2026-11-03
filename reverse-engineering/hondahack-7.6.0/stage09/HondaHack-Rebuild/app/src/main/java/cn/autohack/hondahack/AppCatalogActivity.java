@@ -2,9 +2,11 @@ package cn.autohack.hondahack;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -45,10 +47,13 @@ public final class AppCatalogActivity extends Activity {
         Collections.sort(apps, (left, right) -> Collator.getInstance(Locale.getDefault())
                 .compare(left.loadLabel(pm).toString(), right.loadLabel(pm).toString()));
 
-        TextView count = new TextView(this);
-        count.setText("共找到 " + apps.size() + " 个可启动入口");
-        count.setPadding(0, dp(8), 0, dp(12));
-        list.addView(count);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("show_app_count", true)) {
+            TextView count = new TextView(this);
+            count.setText("共找到 " + apps.size() + " 个可启动入口");
+            count.setPadding(0, dp(8), 0, dp(12));
+            list.addView(count);
+        }
 
         for (final ResolveInfo info : apps) {
             TextView row = new TextView(this);

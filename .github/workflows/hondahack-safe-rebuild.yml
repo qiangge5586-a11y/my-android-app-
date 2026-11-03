@@ -18,6 +18,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run static safety checks
+        run: python reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild/tests/test_safe_rebuild.py
+
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
@@ -39,6 +47,9 @@ jobs:
 
       - name: Build safe reconstruction APK
         run: gradle -p reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild assembleDebug --no-daemon
+
+      - name: Verify APK output
+        run: test -s reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
