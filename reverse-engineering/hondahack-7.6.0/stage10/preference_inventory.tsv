@@ -1,0 +1,49 @@
+preference_or_string_key	classification	notes
+force_portrait	UI/device behavior preference	Listener attached in SettingsActivity and read by MyService
+enable_debug	diagnostic preference	Listener attached in SettingsActivity
+enable_test	test preference	Listener attached in SettingsActivity
+enable_log_file	logging preference	Read during MyApplication.onCreate; listener attached in SettingsActivity
+adb_tcpip	debug/system preference	Conditionally removed from SettingsActivity preference screen
+car_model	vehicle profile preference	Change triggers SettingsActivity refresh
+select_car_model	preference action	Observed in SettingsActivity
+view_app_log	log viewer action	Observed in SettingsActivity
+view_system_log	log viewer action	Observed in SettingsActivity
+check_for_updates	update action	Observed in SettingsActivity
+enable_nav_audio_compatible_mode	navigation audio setting	Observed in MyApplication preference processing
+enable_nav_volume_control	navigation audio setting	Observed in MyApplication preference processing
+enable_key_remapping	input behavior setting	Observed in MyApplication preference processing
+enable_compass	instrument/navigation setting	Observed in MyApplication preference processing
+restore_last_function	behavior setting	Observed in MyApplication preference processing
+fake_driving_operation_status	vehicle integration setting	Evidence only; do not execute in safe rebuild
+fake_source_type_for_all_sources	audio source setting	Observed in MyApplication preference processing
+enable_custom_meter	instrument setting	Observed in MyApplication preference processing
+enable_meter_padding	instrument layout setting	Observed in MyApplication preference processing
+track_up_mode	navigation display setting	Observed in MyApplication preference processing
+enable_screen_cast	screen casting setting	Observed in MyApplication preference processing
+enable_road_information	road information setting	Observed in MyApplication preference processing
+play_road_information_voice	voice setting	Observed in MyApplication preference processing
+music_volume_decrease	volume behavior setting	Observed in MyApplication preference processing
+status_bar_text_size2	instrument layout setting	Observed in MyApplication preference processing
+speed_text_size2	instrument layout setting	Observed in MyApplication preference processing
+meter_padding_left	instrument layout setting	Observed in MyApplication preference processing
+meter_padding_right	instrument layout setting	Observed in MyApplication preference processing
+meter_padding_top	instrument layout setting	Observed in MyApplication preference processing
+meter_padding_bottom	instrument layout setting	Observed in MyApplication preference processing
+fake_source_type2	audio source setting	Observed in MyApplication preference processing
+interception_key_press_list	input behavior setting	Observed in MyApplication preference processing
+interception_key_long_press_list	input behavior setting	Observed in MyApplication preference processing
+vehicle_information_list	vehicle information setting	Observed in MyApplication preference processing
+screen_cast_quality	screen casting setting	Observed in MyApplication preference processing
+enable_avg_fuel_eff	vehicle display setting	Observed in MyApplication preference processing
+enable_inst_fuel_eff	vehicle display setting	Observed in MyApplication preference processing
+auto_confirm_agreement	agreement automation	Evidence only; not implemented
+install_package_freely	package install policy	Evidence only; not implemented
+auto_start_app	automation setting	Evidence only; not implemented
+auto_start_app_name	application selector	Evidence only; not implemented
+auto_start_app_delay	automation delay	Evidence only; not implemented
+auto_fix_wifi	system modification setting	Evidence only; not implemented
+restore_factory_reset	high-risk system action	Not implemented
+reboot	high-risk system action	Not implemented
+fix_extframework_error	high-risk system repair	Not implemented
+fix_driving_video	high-risk system modification	Not implemented
+auto_fix_volume	system behavior action	Evidence only; not implemented
