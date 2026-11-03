@@ -1,0 +1,14 @@
+{
+  "stage": 16,
+  "dex_sha256": "3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319",
+  "class_defs": 1770,
+  "class_hierarchy_edges": 1770,
+  "interface_implementation_edges": 745,
+  "class_data_method_declarations": 11787,
+  "constructors_and_class_initializers": 1793,
+  "field_and_static_value_rows": 21256,
+  "encoded_static_values_parse_issues": 0,
+  "map_item_types": 18,
+  "method_ids": 15752,
+  "field_ids": 13775
+}
