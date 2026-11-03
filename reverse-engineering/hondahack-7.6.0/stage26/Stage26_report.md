@@ -1,0 +1,2 @@
+# Stage 26 report
+Static Android resource and binary XML structure inventory; 975 resource files, 337 XML files, 2,441 parsed elements, 127 unique tags, 115 layout variants, 0 parser issues. Resource table symbolic resolution remains out of scope; no APK built.
