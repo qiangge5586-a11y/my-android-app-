@@ -48,12 +48,25 @@ jobs:
       - name: Build safe reconstruction APK
         run: gradle -p reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild assembleDebug --no-daemon
 
-      - name: Verify APK output
-        run: test -s reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild/app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify APK identity and record checksum
+        shell: bash
+        run: |
+          PROJECT="reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild"
+          APK="$PROJECT/app/build/outputs/apk/debug/app-debug.apk"
+          REPORT="$PROJECT/build/verification"
+          mkdir -p "$REPORT"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > "$REPORT/apk-badging.txt"
+          grep -F "package: name='cn.autohack.hondahack.rebuild'" "$REPORT/apk-badging.txt"
+          grep -F "sdkVersion:'17'" "$REPORT/apk-badging.txt"
+          sha256sum "$APK" > "$REPORT/app-debug.apk.sha256"
 
-      - name: Upload debug APK
+      - name: Upload verified debug APK and build metadata
         uses: actions/upload-artifact@v4
         with:
           name: hondahack-safe-rebuild-debug
-          path: reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild/app/build/outputs/apk/debug/app-debug.apk
+            reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild/build/verification/apk-badging.txt
+            reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild/build/verification/app-debug.apk.sha256
           if-no-files-found: error
