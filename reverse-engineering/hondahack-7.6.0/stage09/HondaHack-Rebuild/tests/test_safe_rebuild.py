@@ -22,9 +22,9 @@ for f in required:
 code="\n".join(p.read_text(encoding="utf-8") for p in src.glob("*.java"))
 for x in ["Runtime.getRuntime().exec","new ProcessBuilder","su -c","Settings.Global.put","Settings.Secure.put","RECORD_AUDIO"]:
  if x in code: fail("unsafe code pattern: "+x)
-for x in ["getLaunchIntentForPackage","ACTION_APPLICATION_DETAILS_SETTINGS","TextWatcher","Build.VERSION.RELEASE","show_device_summary","show_app_count","ACTION_OPEN_DOCUMENT","ACTION_GET_CONTENT","geo:0,0?q=","ACTION_SEND","TextToSpeech","new Locale(\"zh\",\"CN\")"]:
+for x in ["getLaunchIntentForPackage","ACTION_APPLICATION_DETAILS_SETTINGS","TextWatcher","PreferenceManager.getDefaultSharedPreferences(this)","Build.VERSION.RELEASE","show_device_summary","show_app_count","ACTION_OPEN_DOCUMENT","ACTION_GET_CONTENT","geo:0,0?q=","ACTION_SEND","TextToSpeech","new Locale(\"zh\",\"CN\")"]:
  if x not in code: fail("missing feature or compatibility path: "+x)
 g=(APP/"build.gradle").read_text(encoding="utf-8")
 if "JavaVersion.VERSION_1_8" not in g: fail("Java compatibility constant incorrect")
-if "applicationId 'cn.autohack.hondahack.rebuild'" not in g: fail("rebuild must use a distinct application ID")
-print("PASS: manifest, permissions, modules, app catalog search/details, public intents, TTS and safe prefs")
+if "applicationId 'cn.autohack.hondahack.rebuild'" not in g: fail("rebuild must use distinct application ID")
+print("PASS: manifest, permissions, modules, app catalog search/details, shared prefs, public intents and safe APIs")
