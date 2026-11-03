@@ -60,6 +60,14 @@ jobs:
           grep -F "package: name='cn.autohack.hondahack.rebuild'" "$REPORT/apk-badging.txt"
           grep -F "sdkVersion:'17'" "$REPORT/apk-badging.txt"
           sha256sum "$APK" > "$REPORT/app-debug.apk.sha256"
+          SHA="$(cut -d ' ' -f 1 "$REPORT/app-debug.apk.sha256")"
+          {
+            echo "## HondaHack Rebuild APK"
+            echo "- Package: `cn.autohack.hondahack.rebuild`"
+            echo "- minSdk: 17"
+            echo "- SHA-256: `$SHA`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$REPORT/app-debug.apk.sha256"
 
       - name: Upload verified debug APK and build metadata
         uses: actions/upload-artifact@v4
