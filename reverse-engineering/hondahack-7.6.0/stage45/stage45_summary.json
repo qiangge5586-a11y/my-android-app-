@@ -1,0 +1,29 @@
+{
+  "stage": 45,
+  "title": "Intent, Bundle and Android component communication inventory",
+  "semantic_files_scanned": 1540,
+  "matched_api_sites": 562,
+  "matched_caller_classes": 113,
+  "intent_related_string_sites": 467,
+  "category_counts": {
+    "bundle_read": 46,
+    "bundle_write": 60,
+    "component_name": 22,
+    "receiver_register": 18,
+    "intent_construction": 137,
+    "intent_mutation": 34,
+    "activity_launch": 16,
+    "intent_extras_write": 90,
+    "pending_intent": 3,
+    "broadcast_send": 49,
+    "intent_extras_read": 84,
+    "service_launch": 3
+  },
+  "limitations": [
+    "API-reference matching is not interprocedural intent dataflow",
+    "constant strings are keyword-filtered candidates, not proven action/extra values",
+    "implicit intent resolution and runtime receiver registration are not reconstructed",
+    "framework/native and reflection-driven component communication are outside scope",
+    "no source export or APK build"
+  ]
+}
