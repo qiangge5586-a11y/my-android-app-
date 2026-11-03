@@ -1,0 +1,10 @@
+{
+  "stage":55,
+  "probable_activity_layout_links":5,
+  "matched_layout_file_rows":6,
+  "linked_layout_control_rows":60,
+  "manifest_activities":23,
+  "activities_with_probable_layout_links":5,
+  "listener_registration_sites_indexed":93,
+  "limitations":["layout links use nearest preceding resource constant heuristic","layout variants may yield multiple candidates","XML controls do not prove runtime listener binding","listener sites are not tied to specific View IDs","dynamic layouts may be missing","no source export or APK build"]
+}
