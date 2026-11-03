@@ -22,8 +22,7 @@ The artifact includes:
 1. Open the successful Actions run linked above.
 2. Open the `hondahack-safe-rebuild-debug` artifact and download its ZIP.
 3. Extract the ZIP and verify the APK checksum against `app-debug.apk.sha256`.
-4. Copy `app-debug.apk` to the head unit and install it, or use ADB:
-   `adb install app-debug.apk`
+4. Copy `app-debug.apk` to the head unit and install it, or use ADB: `adb install app-debug.apk`.
 5. Keep the original HondaHack APK installed. The rebuild has a distinct application ID and is designed to coexist with it.
 
 If installing an updated debug build over an earlier rebuild fails due to a different debug signing key, uninstall only `cn.autohack.hondahack.rebuild` and install the new APK. Do not uninstall the original `cn.autohack.hondahack` package.
@@ -38,6 +37,6 @@ Original private backend, account/authentication system, full proprietary Java/K
 
 ## Acceptance status
 
-<badge>Build verified</badge> GitHub CI compiled the current project, verified APK package identity and minSdk, and uploaded the artifact.
+**Build verified:** GitHub CI compiled the current project, verified APK package identity and minSdk, and uploaded the artifact.
 
-<badge>Device acceptance pending</badge> No target Honda head-unit model, Android version, display dimensions, or physical test results were supplied. Complete `docs/DEVICE_SMOKE_TEST.md` on the target device before treating this as a vehicle-ready replacement.
+**Device acceptance pending:** No target Honda head-unit model, Android version, display dimensions, or physical test results were supplied. Complete `docs/DEVICE_SMOKE_TEST.md` on the target device before treating this as a vehicle-ready replacement.
