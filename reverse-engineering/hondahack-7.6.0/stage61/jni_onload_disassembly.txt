@@ -1,0 +1,21 @@
+APK_SHA256=e52aed97a77bc4be1e4d248bb9526edafaae428ea20b8926f7763e532cc55fbe
+LIB_SHA256=bb6054b02fb133d8a432800cda84c75f76faca24554e8c70b3136054b3d69fd5
+JNI_OnLoad_ADDRESS=0x00008af0
+JNI_OnLoad_SIZE=56
+JNI_OnLoad_END=0x8b28
+
+00008af0 <JNI_OnLoad>:
+    8af0: e92d4c1c      push {r2, r3, r4, r10, r11, lr}
+    8af4: e28db010      add r11, sp, #16
+    8af8: e3a01000      mov r1, #0
+    8afc: e3004006      movw r4, #0x6
+    8b00: e58d1004      str r1, [sp, #0x4]
+    8b04: e3404001      movt r4, #0x1
+    8b08: e5901000      ldr r1, [r0]
+    8b0c: e1a02004      mov r2, r4
+    8b10: e5913018      ldr r3, [r1, #0x18]
+    8b14: e28d1004      add r1, sp, #4
+    8b18: e12fff33      blx r3
+    8b1c: e1a00004      mov r0, r4
+    8b20: e24bd008      sub sp, r11, #8
+    8b24: e8bd8c10      pop {r4, r10, r11, pc}
