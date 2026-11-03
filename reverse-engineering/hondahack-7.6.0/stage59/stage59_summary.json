@@ -1,0 +1,10 @@
+{
+  "stage":59,
+  "dex_native_methods":14,
+  "matched_jni_exports":14,
+  "native_methods_with_disassembly_blocks":14,
+  "native_methods_with_direct_java_callers":10,
+  "direct_java_to_native_call_edges":10,
+  "native_libraries_loaded_by_dex":3,
+  "limitations":["conventional JNI symbol matching; dynamic RegisterNatives may be absent","library mapping is based on load/export inventory","disassembly is not native source or complete dataflow","caller edges do not prove runtime execution","no source export or APK build"]
+}
