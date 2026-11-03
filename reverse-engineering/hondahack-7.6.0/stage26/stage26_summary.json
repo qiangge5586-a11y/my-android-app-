@@ -1,0 +1,12 @@
+{
+  "stage": 26,
+  "apk": "cn.autohack.hondahack 7.6.0",
+  "resource_files": 975,
+  "xml_files_parsed": 337,
+  "xml_start_elements": 2441,
+  "unique_xml_tags": 127,
+  "layout_variants": 115,
+  "likely_app_layout_files": 33,
+  "parse_issues": 0,
+  "limitations": "Structural XML parsing only; resources.arsc symbolic resolution is not complete; no APK built."
+}
