@@ -1,103 +1,13 @@
 package cn.autohack.hondahack;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
-
-/** Safe local dashboard. It deliberately exposes no privileged vehicle controls. */
+import android.app.Activity;import android.content.Intent;import android.content.SharedPreferences;import android.os.Bundle;import android.preference.PreferenceManager;import android.view.Gravity;import android.view.View;import android.widget.*;
 public final class MainActivity extends Activity {
-    private LinearLayout content;
-    private SharedPreferences prefs;
-
-    @Override protected void onCreate(Bundle state) {
-        super.onCreate(state);
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        ScrollView scroll = new ScrollView(this);
-        content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(20), dp(24), dp(20), dp(24));
-        scroll.addView(content);
-        setContentView(scroll);
-        renderDashboard();
-    }
-
-    @Override protected void onResume() {
-        super.onResume();
-        if (content != null) renderDashboard();
-    }
-
-    private void renderDashboard() {
-        content.removeAllViews();
-        TextView title = new TextView(this);
-        title.setText("HondaHack");
-        title.setTextSize(28);
-        title.setGravity(Gravity.CENTER_VERTICAL);
-        content.addView(title);
-
-        TextView subtitle = new TextView(this);
-        subtitle.setText("7.6.0 功能重建 · 安全模式");
-        subtitle.setTextSize(14);
-        subtitle.setPadding(0, dp(4), 0, dp(16));
-        content.addView(subtitle);
-
-        if (prefs.getBoolean("show_device_summary", true)) {
-            TextView device = new TextView(this);
-            device.setText("设备：" + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL
-                    + "\nAndroid " + android.os.Build.VERSION.RELEASE);
-            device.setTextSize(16);
-            device.setPadding(dp(14), dp(14), dp(14), dp(14));
-            device.setBackgroundColor(0xffeeeeee);
-            content.addView(device);
-        }
-
-        addAction("设备信息", "查看 Android 版本、硬件标识和存储概况", DeviceInfoActivity.class);
-        addAction("应用管理", "查看并启动设备上可启动的应用", AppCatalogActivity.class);
-        addAction("设置", "管理本应用的本地显示选项", SettingsActivity.class);
-
-        TextView notice = new TextView(this);
-        notice.setText("\n安全说明：当前版本只提供本地信息和应用启动功能。原 APK 中的 Root、Xposed、车辆控制、系统分区写入及授权绕过功能未移植。");
-        notice.setTextSize(12);
-        notice.setPadding(0, dp(18), 0, 0);
-        content.addView(notice);
-    }
-
-    private void addAction(String label, String description, final Class<?> target) {
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(14), dp(12), dp(14), dp(12));
-        card.setBackgroundColor(0xfff2f2f2);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.bottomMargin = dp(10);
-        content.addView(card, params);
-
-        TextView heading = new TextView(this);
-        heading.setText(label);
-        heading.setTextSize(18);
-        card.addView(heading);
-        TextView detail = new TextView(this);
-        detail.setText(description);
-        detail.setTextSize(13);
-        card.addView(detail);
-        Button open = new Button(this);
-        open.setText("打开");
-        open.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, target));
-            }
-        });
-        card.addView(open);
-    }
-
-    private int dp(int value) {
-        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
-    }
+ private LinearLayout content;private SharedPreferences prefs;
+ @Override protected void onCreate(Bundle b){super.onCreate(b);prefs=PreferenceManager.getDefaultSharedPreferences(this);ScrollView s=new ScrollView(this);content=new LinearLayout(this);content.setOrientation(1);content.setPadding(dp(20),dp(24),dp(20),dp(24));s.addView(content);setContentView(s);render();}
+ @Override protected void onResume(){super.onResume();if(content!=null)render();}
+ private void render(){content.removeAllViews();TextView t=new TextView(this);t.setText("HondaHack");t.setTextSize(28);t.setGravity(Gravity.CENTER_VERTICAL);content.addView(t);TextView sub=new TextView(this);sub.setText("7.6.0 功能重建 · 安全模式");sub.setPadding(0,dp(4),0,dp(16));content.addView(sub);
+ if(prefs.getBoolean("show_device_summary",true)){TextView d=new TextView(this);d.setText("设备："+android.os.Build.MANUFACTURER+" "+android.os.Build.MODEL+"\nAndroid "+android.os.Build.VERSION.RELEASE);d.setTextSize(16);d.setPadding(dp(14),dp(14),dp(14),dp(14));d.setBackgroundColor(0xffeeeeee);content.addView(d);}
+ add("设备信息","查看 Android 版本、硬件标识和存储概况",DeviceInfoActivity.class);add("应用管理","查看并启动可启动应用",AppCatalogActivity.class);add("导航","通过系统地图应用搜索目的地",NavigationActivity.class);add("本地视频","使用系统文件选择器打开视频",MediaActivity.class);add("设置","管理本应用的本地显示选项",SettingsActivity.class);
+ TextView n=new TextView(this);n.setText("\n安全说明：只提供本地信息和公开 Android Intent。Root、Xposed、车辆控制、系统分区写入及授权绕过功能未移植。");n.setTextSize(12);n.setPadding(0,dp(18),0,0);content.addView(n);}
+ private void add(String label,String desc,final Class<?> c){LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setPadding(dp(14),dp(12),dp(14),dp(12));card.setBackgroundColor(0xfff2f2f2);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(10);content.addView(card,p);TextView h=new TextView(this);h.setText(label);h.setTextSize(18);card.addView(h);TextView d=new TextView(this);d.setText(desc);d.setTextSize(13);card.addView(d);Button b=new Button(this);b.setText("打开");b.setOnClickListener(new View.OnClickListener(){public void onClick(View v){startActivity(new Intent(MainActivity.this,c));}});card.addView(b);}
+ private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
 }
