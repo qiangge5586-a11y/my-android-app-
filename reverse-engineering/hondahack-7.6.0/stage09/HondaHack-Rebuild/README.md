@@ -1,6 +1,10 @@
 # HondaHack Rebuild — Android Studio project
 
-An independent, safe reconstruction of selected user-facing functions observed in HondaHack 7.6.0. This is **not** the original source code and is not a drop-in replacement for the original APK.
+Independent, safe reconstruction of selected user-facing functions observed in HondaHack 7.6.0. This is **not** the original source code and is not a drop-in replacement.
+
+## Important installation detail
+
+The rebuild uses application ID `cn.autohack.hondahack.rebuild`, while keeping Java namespace `cn.autohack.hondahack`. This allows it to be installed beside the original package and avoids silently replacing the original app or its data.
 
 ## Implemented modules
 
@@ -25,44 +29,27 @@ An independent, safe reconstruction of selected user-facing functions observed i
 - Java 8 language compatibility
 
 Open this directory in Android Studio:
-
 `reverse-engineering/hondahack-7.6.0/stage09/HondaHack-Rebuild`
 
-Or build from a shell with Gradle 8.9 installed:
-
-```bash
-gradle assembleDebug
-```
-
-Output:
-
+Or run `gradle assembleDebug`. Output:
 `app/build/outputs/apk/debug/app-debug.apk`
 
 ## Automated checks
 
-The GitHub Actions workflow `.github/workflows/hondahack-safe-rebuild.yml` runs the static safety/feature checks, compiles the debug APK and uploads it as `hondahack-safe-rebuild-debug`.
+GitHub Actions runs static safety/feature checks, compiles the debug APK and uploads `hondahack-safe-rebuild-debug`.
+Run locally with `python tests/test_safe_rebuild.py`.
 
-Run the static checks locally:
+## Privacy and safety
 
-```bash
-python tests/test_safe_rebuild.py
-```
-
-## Privacy and safety boundary
-
-- The app currently declares no Android runtime permissions.
-- It does not use root, Xposed, shell execution, privileged settings writes, vehicle CAN/HMI commands, or destructive factory-reset/partition operations.
-- Navigation uses only the destination the user enters and a standard Android Intent.
-- Video access is limited to the user-selected content URI.
-- Diagnostic sharing occurs only after the user taps Share.
-- The local assistant uses typed commands and system TTS; it does not capture microphone audio or upload speech.
+- No Android runtime permissions are declared.
+- No root, Xposed, shell execution, privileged settings writes, vehicle CAN/HMI commands, or destructive system operations.
+- Navigation uses only a user-entered destination and a standard Android Intent.
+- Video access is limited to a user-selected content URI.
+- Diagnostics are shared only after the user taps Share.
+- The local assistant uses typed commands and system TTS; no microphone recording or speech upload.
 
 ## Known limitations
 
-- Original DEX is obfuscated. The native and DEX reports document evidence but do not recover all original Java/Kotlin/C/C++ source.
-- Original private backend APIs, credentials, server-side behavior, proprietary assets and device-specific integrations are not recreated.
-- Dashboard instrumentation, vehicle repair/optimization actions, Root/Xposed modules, privileged boot behavior, and system modification are intentionally not implemented.
-- Map/player/TTS behavior depends on installed apps and OEM firmware.
-- CI compilation is not a substitute for installation and testing on the target Honda head unit.
+Original DEX is obfuscated. Native/DEX reports document evidence but do not recover all Java/Kotlin/C/C++ source. Original private backend APIs, credentials, server-side behavior, proprietary assets and device-specific integrations are not recreated. Dashboard instrumentation, vehicle repair/optimization actions, Root/Xposed modules, privileged boot behavior and system modification are intentionally not implemented.
 
-See `docs/DEVICE_SMOKE_TEST.md` before using on a vehicle.
+Map/player/TTS behavior depends on installed apps and OEM firmware. CI compilation is not a substitute for physical testing on the target Honda head unit. See `docs/DEVICE_SMOKE_TEST.md`.

@@ -26,4 +26,6 @@ for x in ["getLaunchIntentForPackage","Build.VERSION.RELEASE","show_device_summa
  if x not in code: fail("missing feature or compatibility path: "+x)
 g=(APP/"build.gradle").read_text(encoding="utf-8")
 if "JavaVersion.VERSION_1_8" not in g: fail("Java compatibility constant incorrect")
-print("PASS: manifest, permissions, screens, public intents, TTS/API fallback, diagnostics and safe prefs")
+if "applicationId 'cn.autohack.hondahack.rebuild'" not in g: fail("rebuild must use a distinct application ID")
+print("PASS: manifest, permissions, modules, public intents, TTS/API fallback, diagnostics,")
+print("      safe preferences, Java compatibility and side-by-side package ID.")
