@@ -1,0 +1,12 @@
+metric	value
+class_output_files	1540
+code_units_walked	394188
+decoded_methods	11104
+exceptions	0
+methods_fully_walked	11104
+methods_partial	0
+methods_with_code	11104
+no_code	683
+reserved_opcode_hits	0
+total_instruction_rows	196173
+total_method_records	11787
