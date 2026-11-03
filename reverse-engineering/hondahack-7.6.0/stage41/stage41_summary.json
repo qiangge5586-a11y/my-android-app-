@@ -1,0 +1,28 @@
+{
+  "stage": 41,
+  "title": "Reflection and dynamic dispatch boundary inventory",
+  "semantic_files_scanned": 1540,
+  "matched_call_sites": 376,
+  "matched_caller_classes": 75,
+  "category_counts": {
+    "classloader": 22,
+    "class_lookup": 138,
+    "reflect_field": 62,
+    "reflect_method": 153,
+    "proxy": 1
+  },
+  "distinct_invocation_operands_by_category": {
+    "classloader": 2,
+    "class_lookup": 10,
+    "reflect_field": 9,
+    "reflect_method": 10,
+    "proxy": 1
+  },
+  "limitations": [
+    "API-name and descriptor matching only; not proof of reachable execution",
+    "reflection targets and dynamically loaded class names are not resolved",
+    "method-handle and proxy behavior may be indirect",
+    "framework/runtime/native dynamic dispatch is not covered",
+    "no source export or APK build"
+  ]
+}
