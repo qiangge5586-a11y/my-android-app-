@@ -1,4 +1,4 @@
-# Stage 71 — Native library string reconnaissance
+# Stage 71 — Native library string reconnaissance (corrected)
 
 ## Input hashes
 - APK SHA-256: e52aed97a77bc4be1e4d248bb9526edafaae428ea20b8926f7763e532cc55fbe
@@ -9,19 +9,19 @@
 ## Meaningful printable strings
 | Library | File offset | String | Conservative interpretation |
 |---|---:|---|---|
-| libnative.so | 0x1d18 | COM_TENCENT_QQMUSICCAR_ACTION | A broadcast action identifier naming a QQ Music car integration. The receiver and runtime effect are not established by the string alone. |
-| libnative.so | 0x18129 | cn/autohack/hondahack/e | A Java class descriptor embedded in the native binary. Its purpose is not established. |
+| libnative.so | 0x1d18 | COM_TENCENT_QQMUSICCAR_ACTION | Broadcast action identifier naming a QQ Music car integration; receiver behavior is not established by the string alone. |
+| libnative.so | 0x18129 | cn/autohack/hondahack/e | Java class descriptor embedded in the native binary; purpose is not established. |
 | libmp3lame.so | 0x1e86 | get_lame_short_version | LAME MP3 encoder library symbol. |
 | libmp3lame.so | 0x2a38 | lame_encode_buffer | LAME MP3 encoding API symbol. |
 
-## Negative scan observations
-A printable-string keyword scan of the three libraries did not reveal obvious plaintext HTTP(S) endpoints or obvious token/password/secret labels. This is not proof that the application has no network endpoints or credentials: strings may be encoded, constructed, stored in DEX/resources, or supplied at runtime.
+## URL and credential keyword scan — corrected observation
+- The scan does find an HTTPS URL embedded in compiler build metadata in both libnative.so and libxposed.so: an Android LLVM toolchain source URL (`https://android.googlesource.com/toolchain/llvm-project`).
+- This is compiler provenance metadata, not evidence of an application backend endpoint.
+- The filtered printable strings did not reveal an obvious app-specific HTTP(S) API endpoint or obvious token/password/secret label.
+- This does not prove the APK has no network endpoints or credentials: strings may be encoded, constructed, stored in DEX/resources, or supplied at runtime.
 
 ## Reproducible artifact
 `stage71_native_string_scan.sh` extracts the three exact APK libraries, checks their SHA-256 values, and records matching printable strings with file offsets.
 
 ## Limits and safety
-- Static strings do not prove runtime call paths.
-- No native library was loaded or executed.
-- No credentials were recovered or published.
-- Xposed hooks, authentication bypass, vehicle commands, privileged writes and destructive operations remain out of scope.
+Static strings do not prove runtime call paths. No native library was loaded or executed. No credentials were recovered or published. Xposed hooks, authentication bypass, vehicle commands, privileged writes and destructive operations remain out of scope.
