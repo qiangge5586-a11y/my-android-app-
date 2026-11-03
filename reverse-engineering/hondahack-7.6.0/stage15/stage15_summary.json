@@ -1,0 +1,12 @@
+{
+  "stage": 15,
+  "dex_sha256": "3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319",
+  "class_defs": 1770,
+  "class_data_methods": 11787,
+  "class_initializers_and_constructors": 1793,
+  "code_items_with_register_summary": 11104,
+  "try_handler_rows": 3268,
+  "method_handle_map_entries": 0,
+  "parse_issues": 0,
+  "register_analysis": "structural register dimensions only; not reaching-definitions dataflow"
+}
