@@ -1,0 +1,22 @@
+{
+  "stage": 51,
+  "title": "Storage, preference and field relationship candidates",
+  "storage_api_sites": 242,
+  "storage_methods": 136,
+  "resolved_storage_string_sites": 157,
+  "field_access_sites": 4716,
+  "preference_key_access_sites": 136,
+  "direct_internal_method_edges": 1266,
+  "methods_with_storage_and_field_access": 77,
+  "preference_key_field_candidate_pairs": 2647,
+  "resolved_storage_string_field_candidate_pairs": 2737,
+  "direct_call_neighbor_rows": 277,
+  "storage_methods_with_direct_call_neighbors": 81,
+  "limitations": [
+    "same-method co-occurrence is a candidate relationship, not proof of data provenance",
+    "no register-level or heap-object dataflow",
+    "static invoke edges omit reflection/framework callbacks/JNI/dynamic dispatch",
+    "one-hop neighbors do not prove runtime order or causality",
+    "no Java/Smali source export and no APK build"
+  ]
+}
