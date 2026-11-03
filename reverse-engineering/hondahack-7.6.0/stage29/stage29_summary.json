@@ -1,0 +1,15 @@
+{
+  "stage": 29,
+  "manifest_elements": 86,
+  "application_and_components": 28,
+  "component_counts": {"application":1,"activity":23,"service":2,"receiver":1,"provider":1},
+  "declared_permissions": 22,
+  "unique_permissions": 22,
+  "action_elements": 22,
+  "unique_actions": 22,
+  "intent_filter_elements": 8,
+  "exported_explicit_true": 0,
+  "exported_explicit_false": 1,
+  "exported_unspecified": 27,
+  "limitations": "Flattened XML loses full parent-child hierarchy; Android default exported behavior is not inferred."
+}
