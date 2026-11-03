@@ -203,14 +203,16 @@ public class EnhancementActivity extends Activity {
 
         new AlertDialog.Builder(this)
                 .setTitle("选择要启动的应用")
-                .setItems(labels, (dialog, which) -> {
-                    ResolveInfo info = apps.get(which);
-                    Intent launch = pm.getLaunchIntentForPackage(info.activityInfo.packageName);
-                    if (launch != null) {
-                        try {
-                            startActivity(launch);
-                        } catch (Exception e) {
-                            showMessage("启动失败", e.getClass().getSimpleName());
+                .setItems(labels, new android.content.DialogInterface.OnClickListener() {
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        ResolveInfo info = apps.get(which);
+                        Intent launch = pm.getLaunchIntentForPackage(info.activityInfo.packageName);
+                        if (launch != null) {
+                            try {
+                                startActivity(launch);
+                            } catch (Exception e) {
+                                showMessage("启动失败", e.getClass().getSimpleName());
+                            }
                         }
                     }
                 })
