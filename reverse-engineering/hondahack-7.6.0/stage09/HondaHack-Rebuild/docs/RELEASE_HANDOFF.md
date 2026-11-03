@@ -1,21 +1,19 @@
 # HondaHack Rebuild — build handoff
 
-## Current build
+## Current verified build
 
-- GitHub Actions run: https://github.com/qiangge5586-a11y/my-android-app-/actions/runs/41691847127
+- GitHub Actions run: https://github.com/qiangge5586-a11y/my-android-app-/actions/runs/41692507933
 - Workflow result: SUCCESS
 - Artifact name: `hondahack-safe-rebuild-debug`
-- Artifact archive size: 19,230 bytes
+- Artifact archive size: 19,235 bytes
+- APK SHA-256: `ebd9bbf6d35ea1ae5c838aebc7a0a5d1c75b2bb39f11c9fe5fe58ef628749c69`
 - Package ID: `cn.autohack.hondahack.rebuild`
 - Java namespace: `cn.autohack.hondahack`
 - minSdk: 17
 - targetSdk: 28
 - compileSdk: 35
 
-The artifact includes:
-- `app-debug.apk`
-- `apk-badging.txt`
-- `app-debug.apk.sha256`
+The artifact includes `app-debug.apk`, `apk-badging.txt`, and `app-debug.apk.sha256`.
 
 ## Download and install
 

@@ -63,9 +63,9 @@ jobs:
           SHA="$(cut -d ' ' -f 1 "$REPORT/app-debug.apk.sha256")"
           {
             echo "## HondaHack Rebuild APK"
-            echo "- Package: `cn.autohack.hondahack.rebuild`"
+            echo "- Package: cn.autohack.hondahack.rebuild"
             echo "- minSdk: 17"
-            echo "- SHA-256: `$SHA`"
+            echo "- SHA-256: $SHA"
           } >> "$GITHUB_STEP_SUMMARY"
           cat "$REPORT/app-debug.apk.sha256"
 
