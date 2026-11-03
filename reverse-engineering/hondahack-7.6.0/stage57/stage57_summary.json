@@ -1,0 +1,9 @@
+{
+  "stage":57,
+  "manifest_action_literals":22,
+  "broadcast_or_receiver_api_sites":67,
+  "same_method_action_candidates":9,
+  "receiver_onreceive_action_candidates":8,
+  "distinct_actions_in_broadcast_methods":3,
+  "limitations":["same-method string match is not proof of Intent action argument","flattened Manifest loses action-to-receiver-filter hierarchy","dynamic registration and implicit resolution not simulated","native/reflection broadcasts omitted","no source export or APK build"]
+}
