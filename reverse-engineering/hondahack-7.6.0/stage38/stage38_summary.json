@@ -1,0 +1,16 @@
+{
+  "stage": 38,
+  "title": "Field access and shared-state index",
+  "semantic_files_scanned": 1540,
+  "field_access_sites": 4716,
+  "unique_fields": 1356,
+  "shared_fields_accessed_by_multiple_caller_classes": 357,
+  "unparsed_field_operands": 0,
+  "class_field_coupling_edges": 583,
+  "limitations": [
+    "static opcode inventory, not precise dataflow",
+    "reflection/JNI/native/dynamic access not covered",
+    "shared-field classification is based on caller class count",
+    "no source export or APK build"
+  ]
+}
