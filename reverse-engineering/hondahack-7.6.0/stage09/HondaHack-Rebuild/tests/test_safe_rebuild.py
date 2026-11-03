@@ -57,5 +57,9 @@ for marker in ["getLaunchIntentForPackage", "Build.VERSION.RELEASE",
     if marker not in sources:
         fail("expected safe feature not found: " + marker)
 
-print("PASS: manifest XML, launcher export, no declared permissions, required screens,")
-print("      safe local preferences, public app-launch API, and privileged-execution guard.")
+gradle_file = (APP / "build.gradle").read_text(encoding="utf-8")
+if "JavaVersion.VERSION_1_8" not in gradle_file:
+    fail("Gradle Java compatibility must use the supported VERSION_1_8 constant")
+
+print("PASS: manifest, launcher, permissions, screens, preferences, public app launch,")
+print("      privileged-execution guard, and Gradle Java compatibility.")
