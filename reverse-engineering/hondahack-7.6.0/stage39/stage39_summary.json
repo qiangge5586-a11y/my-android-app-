@@ -1,0 +1,22 @@
+{
+  "stage": 39,
+  "title": "Object allocation and runtime type-use index",
+  "semantic_files_scanned": 1540,
+  "type_operation_sites": 9345,
+  "distinct_target_types": 1666,
+  "classes_with_type_operations": 988,
+  "unresolved_target_types": 0,
+  "opcode_counts": {
+    "instance-of": 514,
+    "check-cast": 2609,
+    "new-instance": 4239,
+    "new-array": 1718,
+    "const-class": 265
+  },
+  "limitations": [
+    "static opcode inventory; does not resolve allocation-to-use object identity",
+    "reflection, JNI/native allocation, framework-created objects and dynamic loading are not modeled",
+    "descriptor extraction is operand-text based",
+    "no source export or APK build"
+  ]
+}
