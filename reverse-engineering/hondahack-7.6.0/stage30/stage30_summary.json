@@ -1,0 +1,9 @@
+{
+  "stage": 30,
+  "manifest_components_checked": 27,
+  "classes_present_in_dex": 27,
+  "classes_missing_from_dex": 0,
+  "component_lifecycle_method_rows": 47,
+  "components_with_lifecycle_methods": 27,
+  "limitations": "Name-based matching only; inherited lifecycle methods and dynamic component registration are not resolved."
+}
