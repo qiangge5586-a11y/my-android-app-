@@ -1,0 +1,17 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.autohack.enhance'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.autohack.enhance.prototype'
+        minSdk 17
+        targetSdk 28
+        versionCode 1
+        versionName '0.1.0-prototype'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
