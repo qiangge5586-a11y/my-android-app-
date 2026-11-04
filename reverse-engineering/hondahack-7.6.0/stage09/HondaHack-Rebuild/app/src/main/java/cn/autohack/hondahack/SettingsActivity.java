@@ -32,14 +32,21 @@ public final class SettingsActivity extends Activity {
         root.addView(note);
 
         addPreference(root, "show_device_summary", "在首页显示设备摘要", true);
-        addPreference(root, "show_app_count", "在应用管理页显示应用数量", true);\n        addPreference(root, "keep_screen_on", "本应用使用期间保持屏幕常亮", false);
+        addPreference(root, "show_app_count", "在应用管理页显示应用数量", true);
+        addPreference(root, "keep_screen_on", "本应用使用期间保持屏幕常亮", false);
     }
 
     private void addPreference(LinearLayout root, final String key, String label, boolean fallback) {
         CheckBox box = new CheckBox(this);
         box.setText(label);
         box.setChecked(prefs.getBoolean(key, fallback));
-        box.setOnCheckedChangeListener((button, checked) -> {\n            prefs.edit().putBoolean(key, checked).apply();\n            if ("keep_screen_on".equals(key)) {\n                if (checked) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);\n                else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);\n            }\n        });
+        box.setOnCheckedChangeListener((button, checked) -> {
+            prefs.edit().putBoolean(key, checked).apply();
+            if ("keep_screen_on".equals(key)) {
+                if (checked) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+        });
         root.addView(box, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
