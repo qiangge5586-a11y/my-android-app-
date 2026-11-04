@@ -1,0 +1,26 @@
+{
+  "stage": 49,
+  "title": "Serialization, structured data and encoding API inventory",
+  "semantic_files_scanned": 1540,
+  "matched_api_sites": 914,
+  "matched_caller_classes": 83,
+  "api_category_counts": {
+    "xml": 304,
+    "base64": 5,
+    "preferences_serialization": 267,
+    "json": 57,
+    "compression": 14
+  },
+  "format_string_candidate_counts": {
+    "json_marker": 75,
+    "xml_marker": 27,
+    "serialization_marker": 1
+  },
+  "limitations": [
+    "API matching does not prove payload format or runtime use",
+    "string markers are heuristic and may be UI text or documentation",
+    "data schemas and object-to-payload mappings are not reconstructed",
+    "native codecs and dynamically loaded libraries are not covered",
+    "no source export or APK build"
+  ]
+}

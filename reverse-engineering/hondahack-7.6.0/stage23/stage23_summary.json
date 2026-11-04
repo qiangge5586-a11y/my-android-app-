@@ -1,0 +1,15 @@
+{
+  "stage": 23,
+  "methods_seen": 11104,
+  "api_call_context_hits": 708,
+  "unique_context_rows": 892,
+  "category_hits": {
+    "shared_preferences": 247,
+    "package_manager": 45,
+    "file_io": 73,
+    "intent_action": 284,
+    "uri_or_url": 59
+  },
+  "preference_key_candidates": 120,
+  "dex_sha256": "3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319"
+}

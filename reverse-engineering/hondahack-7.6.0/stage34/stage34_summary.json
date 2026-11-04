@@ -1,0 +1,7 @@
+{
+  "stage": 34,
+  "setContentView_int_sites": 7,
+  "probable_layout_links": 5,
+  "unresolved_sites": 2,
+  "limitations": "Nearest preceding resource constant is heuristic, not register-aware dataflow."
+}

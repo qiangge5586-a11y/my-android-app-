@@ -1,0 +1,12 @@
+{
+  "stage": 19,
+  "dex_sha256": "3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319",
+  "methods_with_debug_info": 4,
+  "methods_debug_parsed": 4,
+  "source_line_events": 45,
+  "local_variable_events": 35,
+  "debug_parse_issues": 0,
+  "methods_with_line_events": 4,
+  "methods_with_local_events": 2,
+  "debug_streams_terminated": 4
+}

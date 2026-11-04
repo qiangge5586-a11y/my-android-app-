@@ -1,0 +1,10 @@
+{
+  "stage": 31,
+  "layout_files_with_elements": 115,
+  "layout_element_rows": 780,
+  "unique_element_tags": 53,
+  "id_attribute_occurrences": 640,
+  "resolved_id_references": 602,
+  "unresolved_id_references": 38,
+  "limitations": "Style inheritance, data binding, include expansion and runtime-generated views are not reconstructed."
+}

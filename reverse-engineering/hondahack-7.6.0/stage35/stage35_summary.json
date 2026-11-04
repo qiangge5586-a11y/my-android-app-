@@ -1,0 +1,28 @@
+{
+  "stage": 35,
+  "semantic_files": 1540,
+  "methods_scanned": 11104,
+  "callback_method_rows": 131,
+  "listener_binding_sites": 93,
+  "listener_api_types": [
+    "checked_change",
+    "editor_action",
+    "item_click",
+    "item_selected",
+    "key",
+    "menu_click",
+    "preference_change",
+    "preference_click",
+    "text_change",
+    "touch",
+    "view_click",
+    "view_long_click"
+  ],
+  "classes_with_callback_named_methods": 125,
+  "important_limitations": [
+    "Callback names alone do not prove that a class implements the matching listener interface.",
+    "Listener invoke sites are identified by referenced method name; nearest preceding resource constant is only a heuristic and is not register-aware dataflow.",
+    "Anonymous classes, lambdas, reflection, dynamically registered listeners, and XML onClick handlers may be incomplete.",
+    "Static reverse-engineering only; no Java/Smali extraction or APK modification."
+  ]
+}

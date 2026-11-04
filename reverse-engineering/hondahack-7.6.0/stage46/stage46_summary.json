@@ -1,0 +1,23 @@
+{
+  "stage": 46,
+  "title": "Manifest component lifecycle and communication cross-reference",
+  "manifest_components_cross_referenced": 27,
+  "component_type_counts": {
+    "activity": 23,
+    "service": 2,
+    "receiver": 1,
+    "provider": 1
+  },
+  "components_with_intent_or_bundle_api_calls": 12,
+  "components_with_api_calls_by_type": {
+    "activity": 10,
+    "service": 1,
+    "receiver": 1
+  },
+  "limitations": [
+    "component communication is joined by exact class descriptor only",
+    "calls from helper classes and callbacks are not attributed to components",
+    "Intent targets and lifecycle paths are not resolved interprocedurally",
+    "runtime registration, implicit resolution, reflection and native paths are not modeled"
+  ]
+}

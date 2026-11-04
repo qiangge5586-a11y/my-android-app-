@@ -1,0 +1,19 @@
+{
+  "stage": 52,
+  "title": "Network endpoint and manifest reachability cross-reference",
+  "network_api_sites": 177,
+  "network_api_methods": 53,
+  "url_literal_sites": 12,
+  "url_literal_methods": 10,
+  "same_method_url_network_api_candidate_pairs": 3,
+  "network_api_methods_in_direct_manifest_reachable_classes": 24,
+  "network_api_methods_in_manifest_component_classes": 7,
+  "url_literal_sites_without_same_method_network_api": 9,
+  "limitations": [
+    "exact same-method correlation only, not argument dataflow",
+    "global static reachability does not identify a particular component path",
+    "same-method co-occurrence is not proof of URL use",
+    "dynamic/native/framework networking not resolved",
+    "no source export or APK build"
+  ]
+}

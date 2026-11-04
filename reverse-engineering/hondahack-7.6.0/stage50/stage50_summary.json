@@ -1,0 +1,23 @@
+{
+  "stage": 50,
+  "title": "Preference key read/write and component cross-reference",
+  "resolved_preference_keys": 62,
+  "resolved_read_write_sites": 136,
+  "keys_with_read_and_write": 29,
+  "keys_read_only": 29,
+  "keys_write_only": 4,
+  "caller_classes": 43,
+  "sites_in_manifest_component_classes": 34,
+  "component_type_site_counts": {
+    "activity": 12,
+    "service": 21,
+    "receiver": 1
+  },
+  "limitations": [
+    "only keys recovered in Stage 48 linear propagation",
+    "exact component class descriptor matching only",
+    "no preference file/value/control-flow provenance",
+    "dynamic/reflection/native access omitted",
+    "no source export or APK build"
+  ]
+}

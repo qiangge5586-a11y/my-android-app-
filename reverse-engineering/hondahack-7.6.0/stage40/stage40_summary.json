@@ -1,0 +1,26 @@
+{
+  "stage": 40,
+  "title": "Control-flow, exception and synchronization instruction index",
+  "semantic_files_scanned": 1540,
+  "indexed_instruction_sites": 23553,
+  "classes_with_indexed_instructions": 1541,
+  "methods_with_indexed_instructions": 11104,
+  "category_counts": {
+    "return": 13738,
+    "goto": 7380,
+    "monitor_enter": 83,
+    "monitor_exit": 193,
+    "exception_receive": 663,
+    "throw": 757,
+    "switch": 74,
+    "fill_array_data": 665
+  },
+  "limitations": [
+    "instruction inventory does not prove runtime execution",
+    "try/catch structure is not reconstructed here",
+    "monitor-enter/exit pairing and lock identity are not inferred",
+    "framework exception behavior and native control flow are outside this DEX inventory",
+    "Stage 13 normalized invoke mnemonics, so invoke subtypes are not distinguished",
+    "no source export or APK build"
+  ]
+}

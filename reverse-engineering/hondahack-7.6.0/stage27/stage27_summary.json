@@ -1,0 +1,13 @@
+{
+  "stage": 27,
+  "package_id": 127,
+  "package_name": "cn.autohack.hondahack",
+  "type_string_count": 19,
+  "key_string_count": 3099,
+  "type_spec_chunks": 18,
+  "type_config_chunks": 162,
+  "resource_symbol_rows": 6570,
+  "unique_resource_ids": 3131,
+  "parse_issues": 0,
+  "limitations": "Partial resources.arsc structural decoder; resource values, complex bags, overlays and full reference chains are not decoded."
+}

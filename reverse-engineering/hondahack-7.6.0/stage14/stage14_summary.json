@@ -1,0 +1,10 @@
+{
+  "dex_sha256":"3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319",
+  "call_site_ids":0,
+  "branch_instructions":26881,
+  "valid_branch_targets":26881,
+  "invalid_branch_targets":0,
+  "switch_case_targets":857,
+  "validation_issues":0,
+  "instructions_scanned":196173
+}

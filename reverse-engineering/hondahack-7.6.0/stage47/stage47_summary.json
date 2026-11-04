@@ -1,0 +1,22 @@
+{
+  "stage": 47,
+  "title": "Threading, asynchronous execution and service scheduling inventory",
+  "semantic_files_scanned": 1540,
+  "matched_api_sites": 529,
+  "matched_caller_classes": 150,
+  "category_counts": {
+    "handler_looper": 157,
+    "thread": 122,
+    "executor": 58,
+    "timer": 65,
+    "thread_sleep_wait": 41,
+    "async_task": 82,
+    "service_lifecycle": 4
+  },
+  "limitations": [
+    "API references do not prove execution or concurrency at runtime",
+    "thread creation, task submission and callback pairing are not resolved",
+    "race conditions, happens-before relations and lock ownership are not inferred",
+    "framework and native scheduling paths are not covered"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "stage": 44,
+  "title": "Permission-sensitive Android API inventory",
+  "semantic_files_scanned": 1540,
+  "matched_api_sites": 193,
+  "matched_caller_classes": 40,
+  "category_counts": {
+    "location": 21,
+    "microphone_audio": 24,
+    "accessibility_input": 134,
+    "bluetooth": 6,
+    "audio_capture": 8
+  },
+  "zero_match_categories": [
+    "camera",
+    "telephony",
+    "sms_mms",
+    "contacts_calendar",
+    "accounts_auth"
+  ],
+  "limitations": [
+    "API references are not equivalent to permission declarations or runtime permission grants",
+    "descriptor matches may include benign or unused code",
+    "manifest permission-to-call mapping is not resolved at individual call-site level",
+    "native/framework behavior and dynamically invoked APIs are not covered",
+    "no source export or APK build"
+  ]
+}

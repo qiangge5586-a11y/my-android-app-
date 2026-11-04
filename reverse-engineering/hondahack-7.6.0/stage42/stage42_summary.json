@@ -1,0 +1,38 @@
+{
+  "stage": 42,
+  "title": "Network API and endpoint string inventory",
+  "semantic_files_scanned": 1540,
+  "network_api_sites": 177,
+  "classes_with_network_api_sites": 34,
+  "api_category_counts": {
+    "url_uri": 48,
+    "http_url_connection": 49,
+    "tls_ssl": 6,
+    "network_state": 9,
+    "webview": 14,
+    "download_upload": 7,
+    "socket": 44
+  },
+  "url_literal_sites": 12,
+  "unique_url_literals": 11,
+  "url_literals": [
+    "http://%s/app/video/2/index.php",
+    "http://%s/root/activate.php",
+    "http://schemas.android.com/apk/res/android",
+    "http://www.autohack.cn/app/appstore.php?lang=",
+    "http://www.autohack.cn/app/buy.php",
+    "http://www.autohack.cn/app/crash.php",
+    "http://www.autohack.cn/app/hondahack.php?lang=",
+    "http://www.autohack.cn/app/vr.php",
+    "http://www.autohack.org",
+    "http://www.autohack.org/app/buy.php",
+    "http://www.autohack.org/app/crash.php"
+  ],
+  "limitations": [
+    "API references and URL literals do not prove runtime network traffic",
+    "URLs may be test, documentation or inactive strings",
+    "TLS trust behavior requires call-chain and configuration review",
+    "native networking and dynamically constructed endpoints are not covered",
+    "no source export or APK build"
+  ]
+}

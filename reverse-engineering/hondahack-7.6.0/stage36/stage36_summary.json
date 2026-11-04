@@ -1,0 +1,19 @@
+{
+  "stage": 36,
+  "semantic_files": 1540,
+  "methods_scanned": 11104,
+  "classes_seen": 1541,
+  "internal_method_edge_pairs": 1266,
+  "internal_invoke_sites": 1697,
+  "internal_class_edge_pairs": 657,
+  "cross_class_invoke_sites": 1193,
+  "self_class_invoke_sites": 504,
+  "class_call_cycles_count": 11,
+  "largest_cycle_size": 146,
+  "limitations": [
+    "Only direct internal invoke references are counted.",
+    "Reflection, JNI callbacks, dynamic loading and runtime dispatch are not fully resolved.",
+    "Static call edges do not prove runtime reachability.",
+    "No Java/Smali export or APK modification."
+  ]
+}

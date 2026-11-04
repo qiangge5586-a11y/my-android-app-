@@ -1,0 +1,9 @@
+{
+  "dex_sha256":"3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319",
+  "strings":12302,"types":2555,"protos":3490,"fields":13775,"methods":15752,
+  "methods_with_code":11104,"methods_fully_walked":11104,
+  "instruction_rows":196173,"semantic_class_files":1540,
+  "branch_operands":26881,
+  "reference_operands":{"method":46287,"field":38166,"string":4545,"type":9345},
+  "decode_issues":0
+}

@@ -1,0 +1,15 @@
+{
+  "stage": 37,
+  "manifest_component_roots": 27,
+  "classes_in_call_graph": 364,
+  "classes_reachable_from_component_roots": 350,
+  "classes_not_reached_by_direct_edges": 16,
+  "component_root_reachability_rows": 27,
+  "graph_cross_class_edges": 610,
+  "limitations": [
+    "Reachability is computed only over direct static cross-class invoke edges.",
+    "Framework callbacks, XML event handlers, reflection, JNI, dynamic loading, implicit intents, and native callbacks are not modeled.",
+    "A class not reached here is not necessarily dead code; a reached class is not proof of runtime execution.",
+    "No source extraction or APK modification/execution."
+  ]
+}

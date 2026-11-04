@@ -1,0 +1,12 @@
+{
+  "stage": 20,
+  "semantic_methods": 11104,
+  "instructions_indexed": 195434,
+  "basic_blocks": 50288,
+  "cfg_edges": 57960,
+  "branch_decisions": 18836,
+  "methods_with_multiple_blocks": 4982,
+  "validation_issues": 0,
+  "switch_methods": 58,
+  "exception_handler_methods": 531
+}

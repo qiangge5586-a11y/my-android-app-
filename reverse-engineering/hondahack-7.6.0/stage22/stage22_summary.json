@@ -1,0 +1,18 @@
+{
+  "stage": 22,
+  "unique_string_constants_used": 2903,
+  "const_string_use_sites": 4500,
+  "methods_with_string_uses": 1322,
+  "category_hit_rows": 4632,
+  "category_counts": {
+    "other": 3569,
+    "native_or_system": 307,
+    "log_or_debug": 132,
+    "preference_or_config": 539,
+    "filesystem_path": 32,
+    "intent_action": 36,
+    "android_permission": 4,
+    "url": 13
+  },
+  "dex_sha256": "3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319"
+}

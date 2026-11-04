@@ -1,0 +1,10 @@
+{
+  "stage":56,
+  "activity_launch_sites":16,
+  "service_launch_sites":3,
+  "launch_caller_classes":15,
+  "launch_sites_in_manifest_component_classes":4,
+  "same_method_exact_component_literal_candidates":1,
+  "distinct_candidate_target_components":1,
+  "limitations":["launch calls do not prove successful component starts","same-method strings are not Intent dataflow","exact literal matching misses dynamic and obfuscated targets","implicit intent resolution not simulated","no source export or APK build"]
+}

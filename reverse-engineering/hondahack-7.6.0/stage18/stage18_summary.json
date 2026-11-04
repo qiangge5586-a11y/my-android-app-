@@ -1,0 +1,11 @@
+{
+  "stage": 18,
+  "tool": "LLVM objdump ARM32 disassembler",
+  "libraries_disassembled": 3,
+  "jni_export_blocks": 15,
+  "jni_export_instruction_rows": 3162,
+  "direct_call_sites_in_jni_exports": 336,
+  "indirect_call_sites_in_jni_exports": 67,
+  "branch_instructions_in_jni_exports": 597,
+  "execution_performed": false
+}

@@ -1,0 +1,9 @@
+{
+  "stage":58,
+  "classes_in_class_graph":365,
+  "package_clusters":4,
+  "package_dependency_edges":4,
+  "namespace_family_dependency_edges":3,
+  "cross_family_invoke_sites":68,
+  "limitations":["class set is not the full DEX class inventory","package grouping truncates to three path segments","namespace labels use prefixes only","static direct invoke counts are not runtime frequencies","no source export or APK build"]
+}

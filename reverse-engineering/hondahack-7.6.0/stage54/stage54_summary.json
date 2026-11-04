@@ -1,0 +1,12 @@
+{
+  "stage": 54,
+  "classes_profiled": 1520,
+  "manifest_components_profiled": 27,
+  "classes_with_api_context": 121,
+  "classes_with_string_use": 553,
+  "classes_with_field_access": 379,
+  "classes_with_callback_candidates": 125,
+  "manifest_components_with_api_context": 14,
+  "manifest_components_with_field_access": 14,
+  "limitations": ["class-level static evidence only", "nearby strings are not proven API arguments", "static call counts do not imply runtime execution", "helper classes are not automatically attributed to Manifest components", "obfuscated names retained", "no source export or APK build"]
+}

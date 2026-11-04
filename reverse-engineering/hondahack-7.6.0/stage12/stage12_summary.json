@@ -1,0 +1,16 @@
+{
+  "dex_sha256": "3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319",
+  "dex_bytes": 1909752,
+  "method_records": 11787,
+  "methods_with_code": 11104,
+  "methods_decoded": 11104,
+  "methods_fully_walked": 11104,
+  "methods_partial": 0,
+  "exceptions": 0,
+  "instruction_rows": 196173,
+  "code_units_walked": 394188,
+  "class_output_files": 1540,
+  "reserved_opcode_hits": 0,
+  "failure_count": 0,
+  "opcode_kinds": 52
+}

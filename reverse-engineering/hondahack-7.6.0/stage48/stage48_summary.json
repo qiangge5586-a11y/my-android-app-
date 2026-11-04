@@ -1,0 +1,26 @@
+{
+  "stage": 48,
+  "title": "Storage and persistence read/write relationship inventory",
+  "semantic_files_scanned": 1540,
+  "semantic_instruction_rows_scanned": 196173,
+  "matched_storage_api_sites": 242,
+  "matched_caller_classes": 82,
+  "matched_methods": 136,
+  "resolved_string_argument_sites": 157,
+  "category_counts": {
+    "content_resolver": 7,
+    "file_construct": 45,
+    "file_input_open": 15,
+    "file_output_open": 5,
+    "preferences_read": 115,
+    "preferences_write": 54,
+    "random_access_open": 1
+  },
+  "limitations": [
+    "intra-method linear const-string/move propagation only; no CFG joins, interprocedural propagation, heap tracking or object identity",
+    "method overloads and argument positions are selected by descriptor/name heuristics and require review",
+    "dynamic paths, encrypted/assembled strings, native I/O and framework-internal persistence are not resolved",
+    "API references do not prove runtime execution or successful persistence",
+    "no Java/Smali source export and no APK build"
+  ]
+}

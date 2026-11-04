@@ -1,0 +1,5 @@
+library	offset_hex	string	interpretation
+libnative.so	0x1d18	COM_TENCENT_QQMUSICCAR_ACTION	QQ Music car broadcast action identifier; runtime handling unconfirmed
+libnative.so	0x18129	cn/autohack/hondahack/e	Java class descriptor; semantics unconfirmed
+libmp3lame.so	0x1e86	get_lame_short_version	LAME encoder API symbol
+libmp3lame.so	0x2a38	lame_encode_buffer	LAME MP3 encoding API symbol

@@ -1,0 +1,9 @@
+{
+  "stage": 25,
+  "preference_keys": 62,
+  "preference_read_sites": 98,
+  "preference_write_sites": 38,
+  "intent_actions": 79,
+  "intent_action_sites": 97,
+  "keys_with_both_read_and_write": 29
+}

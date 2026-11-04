@@ -1,0 +1,5 @@
+class	method_count	key_evidence
+MyService	34	40 registered IntentFilter actions; service lifecycle; GPS and receiver evidence
+MyApplication	32	SharedPreferences initialization; four Mitsubishi service interface descriptors
+SettingsActivity	14	PreferenceActivity; preference listeners; car_model refresh
+FixActivity	14	System repair/factory reset/reboot preference keys; excluded from executable rebuild

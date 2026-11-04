@@ -1,0 +1,4 @@
+path	compressed_size	uncompressed_size	sha256
+lib/armeabi-v7a/libnative.so	53609	120464	bb6054b02fb133d8a432800cda84c75f76faca24554e8c70b3136054b3d69fd5
+lib/armeabi-v7a/libmp3lame.so	93077	157368	bb7c1a46782f04b68bbbfa0db3b58db00b8c0dabaff081e33957982f92c6cd72
+lib/armeabi-v7a/libxposed.so	48349	108124	c241f274694c37cf5db0f5a3eb9baa9f7beca8ccc4ab2f911a91cb9661e1e9bb

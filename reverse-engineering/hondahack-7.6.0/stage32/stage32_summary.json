@@ -1,0 +1,8 @@
+{
+  "stage": 32,
+  "resource_value_rows": 6563,
+  "global_string_pool_count": 3428,
+  "value_kind_counts": {"string":4336,"complex":1387,"boolean":457,"color_argb8":66,"color_rgb8":9,"reference":25,"dimension":234,"fraction":14,"float":12,"int_decimal":23},
+  "parse_issues": 7,
+  "limitations": "Simple scalar values decoded; complex bag/map payloads not expanded; 7 complex-entry boundary diagnostics."
+}

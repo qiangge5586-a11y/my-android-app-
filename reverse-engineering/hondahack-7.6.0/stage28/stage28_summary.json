@@ -1,0 +1,10 @@
+{
+  "stage": 28,
+  "resource_ids_in_table": 3131,
+  "direct_dex_resource_constant_sites": 472,
+  "methods_with_direct_resource_constants": 168,
+  "classes_with_direct_resource_constants": 94,
+  "R_field_reference_sites": 0,
+  "unique_R_field_references": 0,
+  "limitations": "Literal const* matching only; dynamic resource lookup, reflection and indirect propagation are not covered."
+}

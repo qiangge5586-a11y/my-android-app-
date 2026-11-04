@@ -1,0 +1,27 @@
+{
+  "stage": 43,
+  "title": "Storage, settings, process and IPC API inventory",
+  "semantic_files_scanned": 1540,
+  "matched_api_sites": 1154,
+  "matched_caller_classes": 161,
+  "category_counts": {
+    "binder_ipc": 559,
+    "package_manager": 45,
+    "content_provider": 14,
+    "file_api": 261,
+    "preferences": 267,
+    "process_execution": 6,
+    "system_properties": 2
+  },
+  "zero_match_categories": [
+    "database",
+    "system_settings"
+  ],
+  "limitations": [
+    "API reference matching only; does not prove successful or reachable operations",
+    "file paths and arguments are not fully dataflow-resolved",
+    "privilege requirements and Android-version behavior are not inferred",
+    "native/system-server operations outside DEX references are not covered",
+    "no source export or APK build"
+  ]
+}

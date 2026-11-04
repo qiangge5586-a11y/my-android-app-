@@ -1,0 +1,12 @@
+{
+  "stage": 17,
+  "dex_sha256": "3c3a0ac9deac6fd33bf9a76dd338085896a3010c9f4d9dfc7cb54eafc3595319",
+  "native_method_declarations": 14,
+  "native_exported_jni_symbols": 14,
+  "jni_declaration_symbol_matches": 14,
+  "load_library_calls": 2,
+  "loaded_library_names": ["mp3lame", "native"],
+  "native_libraries": 3,
+  "parse_errors": 0,
+  "analysis": "static ELF metadata and DEX declaration correlation only"
+}
