@@ -6,7 +6,9 @@ Independent, safe reconstruction of selected user-facing functions observed in H
 
 The rebuild uses application ID `cn.autohack.hondahack.rebuild`, while keeping Java namespace `cn.autohack.hondahack`. This allows it to be installed beside the original package and avoids silently replacing the original app or its data.
 
-See [`docs/FEATURE_MATRIX.md`](docs/FEATURE_MATRIX.md) for the evidence-based parity matrix and remaining acceptance gaps.\n\n## Implemented modules
+See [`docs/FEATURE_MATRIX.md`](docs/FEATURE_MATRIX.md) for the evidence-based parity matrix and remaining acceptance gaps.
+
+## Implemented modules
 
 | Module | Current behavior |
 |---|---|
