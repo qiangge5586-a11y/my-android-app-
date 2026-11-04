@@ -17,7 +17,7 @@ The rebuild uses application ID `cn.autohack.hondahack.rebuild`, while keeping J
 | App management | Lists launcher-visible apps and opens them through Android's public launch API |
 | Local APK install | User selects an APK and Android's package installer asks for confirmation; no silent install |
 | Navigation | Sends a user-entered destination to installed map apps using a standard geo URI; includes a manual transient audio-focus test using public AudioManager APIs |
-| Local video | User selects one video through the system document picker; an installed player opens it |
+| Local video | User selects and previews a video; API 19+ can save a persistent in-app startup-video preset, opened only by user action |
 | Diagnostics | Builds a local device/app summary; sharing is user-initiated |
 | Local assistant | Text command shortcuts with optional Android TextToSpeech output |
 | Settings | Persists local display preferences, including an app-only keep-screen-on option |
