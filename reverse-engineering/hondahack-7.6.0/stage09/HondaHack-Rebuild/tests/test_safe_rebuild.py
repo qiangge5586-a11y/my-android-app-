@@ -16,13 +16,13 @@ if len(launch)!=1: fail("expected one launcher activity")
 perms=[x.attrib.get(A+"name") for x in m.findall("uses-permission")]
 if perms: fail("unexpected permissions: "+str(perms))
 src=APP/"src/main/java/cn/autohack/hondahack"
-required=["MainActivity.java","RemapKeysActivity.java","MeterActivity.java","DeviceInfoActivity.java","AppCatalogActivity.java","NavigationActivity.java","MediaActivity.java","VoiceAssistantActivity.java","DiagnosticsActivity.java","SettingsActivity.java","MyApplication.java","MyService.java","MyBroadcastReceiver.java"]
+required=["MainActivity.java","RemapKeysActivity.java","MeterActivity.java","ApkInstallActivity.java","DeviceInfoActivity.java","AppCatalogActivity.java","NavigationActivity.java","MediaActivity.java","VoiceAssistantActivity.java","DiagnosticsActivity.java","SettingsActivity.java","MyApplication.java","MyService.java","MyBroadcastReceiver.java"]
 for f in required:
  if not (src/f).is_file(): fail("missing "+f)
 code="\n".join(p.read_text(encoding="utf-8") for p in src.glob("*.java"))
 for x in ["Runtime.getRuntime().exec","new ProcessBuilder","su -c","Settings.Global.put","Settings.Secure.put","RECORD_AUDIO"]:
  if x in code: fail("unsafe code pattern: "+x)
-for x in ["getLaunchIntentForPackage","ACTION_APPLICATION_DETAILS_SETTINGS","TextWatcher","onKeyDown","keymap_","演示数据","13.8V","AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK","abandonAudioFocus","PreferenceManager.getDefaultSharedPreferences(this)","Build.VERSION.RELEASE","show_device_summary","show_app_count","ACTION_OPEN_DOCUMENT","ACTION_GET_CONTENT","geo:0,0?q=","ACTION_SEND","TextToSpeech","new Locale(\"zh\",\"CN\")"]:
+for x in ["getLaunchIntentForPackage","ACTION_APPLICATION_DETAILS_SETTINGS","TextWatcher","onKeyDown","keymap_","演示数据","13.8V","AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK","abandonAudioFocus","application/vnd.android.package-archive","ACTION_GET_CONTENT","PreferenceManager.getDefaultSharedPreferences(this)","Build.VERSION.RELEASE","show_device_summary","show_app_count","ACTION_OPEN_DOCUMENT","ACTION_GET_CONTENT","geo:0,0?q=","ACTION_SEND","TextToSpeech","new Locale(\"zh\",\"CN\")"]:
  if x not in code: fail("missing feature or compatibility path: "+x)
 g=(APP/"build.gradle").read_text(encoding="utf-8")
 if "JavaVersion.VERSION_1_8" not in g: fail("Java compatibility constant incorrect")
