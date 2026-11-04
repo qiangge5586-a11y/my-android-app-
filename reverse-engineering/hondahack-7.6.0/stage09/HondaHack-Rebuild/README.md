@@ -11,6 +11,7 @@ The rebuild uses application ID `cn.autohack.hondahack.rebuild`, while keeping J
 | Module | Current behavior |
 |---|---|
 | Dashboard | Local home screen and safe-mode notice |
+| Key mapping (foreground test) | Captures only key events delivered while this screen is foreground; stores local mappings to app pages |
 | Device information | Read-only Android, hardware and internal-storage summary |
 | App management | Lists launcher-visible apps and opens them through Android's public launch API |
 | Navigation | Sends a user-entered destination to installed map apps using a standard geo URI |
