@@ -21,6 +21,7 @@ public final class MyApplication extends Application {
             @Override public void onActivityStarted(Activity activity) { }
             @Override public void onActivityResumed(Activity activity) {
                 applyScreenPolicy(activity);
+                LocalEventLog.append(getApplicationContext(), "screen_opened:" + activity.getClass().getSimpleName());
             }
             @Override public void onActivityPaused(Activity activity) {
                 activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
