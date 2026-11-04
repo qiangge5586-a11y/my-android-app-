@@ -15,7 +15,7 @@ See [`docs/FEATURE_MATRIX.md`](docs/FEATURE_MATRIX.md) for the evidence-based pa
 | Dashboard | Local home screen and safe-mode notice |
 | Key mapping (foreground test) | Captures only key events delivered while this screen is foreground; stores local mappings to app pages |
 | Meter preview | Dashboard-style gauge with explicitly fixed demo values; no vehicle telemetry or CAN access |
-| Device information | Read-only Android, hardware and internal-storage summary |
+| Device information | Read-only Android, hardware, display resolution/density, storage and APK-installer availability summary |
 | App management | Lists launcher-visible apps and opens them through Android's public launch API |
 | Local APK install | User selects an APK and Android's package installer asks for confirmation; no silent install |
 | Navigation | Sends a user-entered destination to installed map apps using a standard geo URI; includes a manual transient audio-focus test using public AudioManager APIs |
