@@ -40,6 +40,11 @@ public final class MeterActivity extends Activity {
     private final class GaugeView extends View {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         GaugeView() { super(MeterActivity.this); setMinimumHeight(dp(250)); }
+        @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            int width = resolveSize(dp(320), widthMeasureSpec);
+            int height = resolveSize(dp(250), heightMeasureSpec);
+            setMeasuredDimension(width, height);
+        }
         @Override protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             float cx = getWidth() / 2f;
