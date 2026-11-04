@@ -15,6 +15,7 @@ The rebuild uses application ID `cn.autohack.hondahack.rebuild`, while keeping J
 | Meter preview | Dashboard-style gauge with explicitly fixed demo values; no vehicle telemetry or CAN access |
 | Device information | Read-only Android, hardware and internal-storage summary |
 | App management | Lists launcher-visible apps and opens them through Android's public launch API |
+| Local APK install | User selects an APK and Android's package installer asks for confirmation; no silent install |
 | Navigation | Sends a user-entered destination to installed map apps using a standard geo URI; includes a manual transient audio-focus test using public AudioManager APIs |
 | Local video | User selects one video through the system document picker; an installed player opens it |
 | Diagnostics | Builds a local device/app summary; sharing is user-initiated |
