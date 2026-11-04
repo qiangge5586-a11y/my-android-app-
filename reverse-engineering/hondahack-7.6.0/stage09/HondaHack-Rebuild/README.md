@@ -19,6 +19,7 @@ The rebuild uses application ID `cn.autohack.hondahack.rebuild`, while keeping J
 | Navigation | Sends a user-entered destination to installed map apps using a standard geo URI; includes a manual transient audio-focus test using public AudioManager APIs |
 | Local video | User selects and previews a video; API 19+ can save a persistent in-app startup-video preset, opened only by user action |
 | Diagnostics | Builds a local device/app summary; sharing is user-initiated |
+| Local operation log | Stores the last 100 app screen-open events locally; user can clear or share them |
 | Local assistant | Text command shortcuts with optional Android TextToSpeech output |
 | Settings | Persists local display preferences, including an app-only keep-screen-on option |
 
