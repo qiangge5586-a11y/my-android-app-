@@ -20,7 +20,7 @@ The rebuild uses application ID `cn.autohack.hondahack.rebuild`, while keeping J
 | Local video | User selects one video through the system document picker; an installed player opens it |
 | Diagnostics | Builds a local device/app summary; sharing is user-initiated |
 | Local assistant | Text command shortcuts with optional Android TextToSpeech output |
-| Settings | Persists two local display preferences |
+| Settings | Persists local display preferences, including an app-only keep-screen-on option |
 
 ## Build environment
 
