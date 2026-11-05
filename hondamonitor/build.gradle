@@ -1,0 +1,4 @@
+plugins { id 'com.android.application' }
+android { namespace 'com.honda.carmonitor'; compileSdk 35
+ defaultConfig { applicationId 'com.honda.carmonitor'; minSdk 17; targetSdk 28; versionCode 1; versionName '0.1.0' }
+}
