@@ -1,4 +1,4 @@
-name: Build Android APKs
+name: Build Honda Car Monitor APK
 on:
   push:
     branches: [ main ]
@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 jobs:
-  build:
+  build-honda-monitor:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,10 +24,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - run: gradle --no-daemon clean :app:assembleDebug :hondamonitor:assembleDebug
-      - run: test -s hondamonitor/build/outputs/apk/debug/hondamonitor-debug.apk
+      - name: Build Chinese Honda Car Monitor APK
+        run: gradle --no-daemon :hondamonitor:assembleDebug
+      - name: Verify APK output
+        run: |
+          test -s hondamonitor/build/outputs/apk/debug/hondamonitor-debug.apk
+          ls -lh hondamonitor/build/outputs/apk/debug/hondamonitor-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Honda-Car-Monitor-Chinese-debug
+          name: Honda-Car-Monitor-Chinese-v0.3.0
           path: hondamonitor/build/outputs/apk/debug/hondamonitor-debug.apk
           if-no-files-found: error
+          retention-days: 30
