@@ -350,7 +350,7 @@ public class MainActivity extends Activity {
         }
         java.util.Arrays.sort(files, new java.util.Comparator<File>() {
             @Override public int compare(File a, File b) {
-                return Long.compare(b.lastModified(), a.lastModified());
+                return b.lastModified() > a.lastModified() ? 1 : (b.lastModified() < a.lastModified() ? -1 : 0);
             }
         });
         final File[] reports = files;
