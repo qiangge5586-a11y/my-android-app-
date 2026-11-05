@@ -75,10 +75,13 @@ public class MainActivity extends Activity {
         shareReport.setText("分享检测报告");
         Button viewReports = new Button(this);
         viewReports.setText("查看已保存报告");
+        Button usbReport = new Button(this);
+        usbReport.setText("保存报告到 U 盘");
         exportBar.addView(saveReport, new LinearLayout.LayoutParams(0, -2, 1));
         exportBar.addView(shareReport, new LinearLayout.LayoutParams(0, -2, 1));
         root.addView(exportBar);
         root.addView(viewReports);
+        root.addView(usbReport);
         saveReport.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { saveReportFile(); }
         });
@@ -87,6 +90,9 @@ public class MainActivity extends Activity {
         });
         viewReports.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { showSavedReports(); }
+        });
+        usbReport.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) { saveReportToUsb(); }
         });
 
         ScrollView scroller = new ScrollView(this);
@@ -304,7 +310,7 @@ public class MainActivity extends Activity {
         String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date());
         report.append("HONDA CAR MONITOR - 本田车机检测报告\n");
         report.append("报告生成时间：").append(time).append("\n");
-        report.append("应用版本：0.5.0\n========================================\n");
+        report.append("应用版本：0.7.0\n========================================\n");
         report.append(collectText(list));
         report.append("\n========================================\n");
         report.append("说明：本报告来自 Android 本机只读检测，结果受系统权限和厂商接口限制。");
@@ -336,6 +342,66 @@ public class MainActivity extends Activity {
             stream.close();
         }
         return reportFile;
+    }
+
+    private void saveReportToUsb() {
+        if (Build.VERSION.SDK_INT < 19) {
+            Toast.makeText(this, "当前 Android 版本不支持自动识别 U 盘", Toast.LENGTH_LONG).show();
+            return;
+        }
+        File[] appDirs = getExternalFilesDirs(null);
+        final ArrayList<File> usbDirs = new ArrayList<File>();
+        if (appDirs != null) {
+            for (File dir : appDirs) {
+                if (dir == null) continue;
+                boolean removable = false;
+                if (Build.VERSION.SDK_INT >= 21) {
+                    try { removable = Environment.isExternalStorageRemovable(dir); }
+                    catch (Exception ignored) { }
+                }
+                if (removable && dir.exists()) usbDirs.add(dir);
+            }
+        }
+        if (usbDirs.size() == 0) {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("未检测到 U 盘")
+                    .setMessage("请先插入 U 盘并等待车机识别，再点击保存。部分车机不向普通 APP 开放 U 盘存储权限。")
+                    .setPositiveButton("知道了", null).show();
+            return;
+        }
+        if (usbDirs.size() == 1) {
+            writeReportToUsb(usbDirs.get(0));
+            return;
+        }
+        String[] choices = new String[usbDirs.size()];
+        for (int i = 0; i < usbDirs.size(); i++) choices[i] = "可移动存储 " + (i + 1);
+        new android.app.AlertDialog.Builder(this).setTitle("选择 U 盘")
+                .setItems(choices, new android.content.DialogInterface.OnClickListener() {
+                    @Override public void onClick(android.content.DialogInterface dialog, int which) {
+                        writeReportToUsb(usbDirs.get(which));
+                    }
+                }).setNegativeButton("取消", null).show();
+    }
+
+    private void writeReportToUsb(File appExternalDir) {
+        String fileName = "HondaCarMonitor-检测报告-"
+                + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date()) + ".txt";
+        OutputStream output = null;
+        try {
+            File folder = new File(appExternalDir, "HondaCarMonitor/Reports");
+            if (!folder.exists() && !folder.mkdirs()) throw new Exception("无法在 U 盘创建报告目录");
+            File report = new File(folder, fileName);
+            output = new FileOutputStream(report);
+            output.write(createReport().getBytes("UTF-8"));
+            output.flush();
+            Toast.makeText(this, "报告已保存到 U 盘 Android/data/com.honda.carmonitor/files/HondaCarMonitor/Reports", Toast.LENGTH_LONG).show();
+            item("U 盘导出状态", "成功：" + report.getAbsolutePath());
+        } catch (Exception error) {
+            Toast.makeText(this, "写入 U 盘失败：" + safe(error.getMessage()), Toast.LENGTH_LONG).show();
+            item("U 盘导出状态", "失败：" + safe(error.getMessage()));
+        } finally {
+            try { if (output != null) output.close(); } catch (Exception ignored) { }
+        }
     }
 
     private void showSavedReports() {
