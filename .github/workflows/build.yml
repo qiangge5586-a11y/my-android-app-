@@ -32,7 +32,7 @@ jobs:
           ls -lh hondamonitor/build/outputs/apk/debug/hondamonitor-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Honda-Car-Monitor-Chinese-v0.3.0
+          name: Honda-Car-Monitor-Chinese-v0.4.0
           path: hondamonitor/build/outputs/apk/debug/hondamonitor-debug.apk
           if-no-files-found: error
           retention-days: 30
