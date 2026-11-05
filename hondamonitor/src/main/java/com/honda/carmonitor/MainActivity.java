@@ -73,14 +73,20 @@ public class MainActivity extends Activity {
         saveReport.setText("导出 TXT 报告");
         Button shareReport = new Button(this);
         shareReport.setText("分享检测报告");
+        Button viewReports = new Button(this);
+        viewReports.setText("查看已保存报告");
         exportBar.addView(saveReport, new LinearLayout.LayoutParams(0, -2, 1));
         exportBar.addView(shareReport, new LinearLayout.LayoutParams(0, -2, 1));
         root.addView(exportBar);
+        root.addView(viewReports);
         saveReport.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { saveReportFile(); }
         });
         shareReport.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { shareReport(); }
+        });
+        viewReports.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) { showSavedReports(); }
         });
 
         ScrollView scroller = new ScrollView(this);
@@ -318,11 +324,77 @@ public class MainActivity extends Activity {
         writeReportToDownloads();
     }
 
+    private File saveReportPrivately(String fileName) throws Exception {
+        File folder = new File(getFilesDir(), "reports");
+        if (!folder.exists() && !folder.mkdirs()) throw new Exception("无法创建应用内报告目录");
+        File reportFile = new File(folder, fileName);
+        FileOutputStream stream = new FileOutputStream(reportFile);
+        try {
+            stream.write(createReport().getBytes("UTF-8"));
+            stream.flush();
+        } finally {
+            stream.close();
+        }
+        return reportFile;
+    }
+
+    private void showSavedReports() {
+        File folder = new File(getFilesDir(), "reports");
+        File[] files = folder.listFiles();
+        if (files == null || files.length == 0) {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("检测报告")
+                    .setMessage("目前还没有保存的报告。请先点击“导出 TXT 报告”。")
+                    .setPositiveButton("知道了", null).show();
+            return;
+        }
+        java.util.Arrays.sort(files, new java.util.Comparator<File>() {
+            @Override public int compare(File a, File b) {
+                return Long.compare(b.lastModified(), a.lastModified());
+            }
+        });
+        final File[] reports = files;
+        String[] names = new String[files.length];
+        for (int i = 0; i < files.length; i++) names[i] = files[i].getName();
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("已保存报告（点击查看）")
+                .setItems(names, new android.content.DialogInterface.OnClickListener() {
+                    @Override public void onClick(android.content.DialogInterface dialog, int which) {
+                        showReportContent(reports[which]);
+                    }
+                })
+                .setNegativeButton("关闭", null).show();
+    }
+
+    private void showReportContent(File file) {
+        try {
+            StringBuilder content = new StringBuilder();
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = reader.readLine()) != null) content.append(line).append("\\n");
+            reader.close();
+            TextView text = new TextView(this);
+            text.setText(content.toString());
+            text.setTextColor(fg);
+            text.setTextSize(15);
+            text.setPadding(20, 16, 20, 16);
+            ScrollView scroll = new ScrollView(this);
+            scroll.addView(text);
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle(file.getName()).setView(scroll)
+                    .setPositiveButton("关闭", null).show();
+        } catch (Exception error) {
+            Toast.makeText(this, "读取报告失败：" + safe(error.getMessage()), Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void writeReportToDownloads() {
         String fileName = "HondaCarMonitor-检测报告-"
                 + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date()) + ".txt";
         OutputStream output = null;
+        File privateReport = null;
         try {
+            privateReport = saveReportPrivately(fileName);
             if (Build.VERSION.SDK_INT >= 29) {
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
@@ -347,11 +419,16 @@ public class MainActivity extends Activity {
             if (output == null) throw new Exception("无法打开报告文件");
             output.write(createReport().getBytes("UTF-8"));
             output.flush();
-            Toast.makeText(this, "报告已保存到 Download/HondaCarMonitor", Toast.LENGTH_LONG).show();
-            item("报告导出状态", "成功：Download/HondaCarMonitor/" + fileName);
+            Toast.makeText(this, "报告已保存，可在 APP 内点击“查看已保存报告”查看", Toast.LENGTH_LONG).show();
+            item("报告导出状态", "成功：APP 内已保存；公共目录 Download/HondaCarMonitor/" + fileName);
         } catch (Exception error) {
-            Toast.makeText(this, "报告保存失败：" + safe(error.getMessage()), Toast.LENGTH_LONG).show();
-            item("报告导出状态", "保存失败：" + safe(error.getMessage()));
+            if (privateReport != null) {
+                Toast.makeText(this, "报告已保存在 APP 内；公共下载目录不可用，可点击“查看已保存报告”查看", Toast.LENGTH_LONG).show();
+                item("报告导出状态", "APP 内保存成功；公共目录导出失败：" + safe(error.getMessage()));
+            } else {
+                Toast.makeText(this, "报告保存失败：" + safe(error.getMessage()), Toast.LENGTH_LONG).show();
+                item("报告导出状态", "保存失败：" + safe(error.getMessage()));
+            }
         } finally {
             try { if (output != null) output.close(); } catch (Exception ignored) { }
         }
