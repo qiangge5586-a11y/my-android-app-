@@ -3,9 +3,14 @@ package com.honda.carmonitor;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.pm.PackageManager;
+import android.Manifest;
+import android.content.ContentValues;
+import android.provider.MediaStore;
+import android.widget.Toast;
 import android.content.Intent;
 import android.net.Uri;
 import java.io.OutputStream;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import android.graphics.Color;
@@ -36,7 +41,7 @@ public class MainActivity extends Activity {
     private TextView cpuLive;
     private long previousIdle = -1;
     private long previousTotal = -1;
-    private static final int REQUEST_SAVE_REPORT = 7301;
+    private static final int REQUEST_WRITE_STORAGE = 7302;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -280,7 +285,7 @@ public class MainActivity extends Activity {
             for (int i = 0; i < group.getChildCount(); i++) {
                 String child = collectText(group.getChildAt(i));
                 if (child.length() > 0) {
-                    if (result.length() > 0) result.append("\\n");
+                    if (result.length() > 0) result.append("\n");
                     result.append(child);
                 }
             }
@@ -291,28 +296,64 @@ public class MainActivity extends Activity {
     private String createReport() {
         StringBuilder report = new StringBuilder();
         String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date());
-        report.append("HONDA CAR MONITOR - 本田车机检测报告\\n");
-        report.append("报告生成时间：").append(time).append("\\n");
-        report.append("应用版本：0.4.0\\n========================================\\n");
+        report.append("HONDA CAR MONITOR - 本田车机检测报告\n");
+        report.append("报告生成时间：").append(time).append("\n");
+        report.append("应用版本：0.5.0\n========================================\n");
         report.append(collectText(list));
-        report.append("\\n========================================\\n");
+        report.append("\n========================================\n");
         report.append("说明：本报告来自 Android 本机只读检测，结果受系统权限和厂商接口限制。");
-        report.append("\\n不包含发动机转速、车速、水温、故障码等 ECU 数据；读取这些数据需要兼容 OBD2 适配器或车厂授权接口。");
-        report.append("\\n报告由用户主动导出或分享，不会由本 APP 自动联网上传。\\n");
+        report.append("\n不包含发动机转速、车速、水温、故障码等 ECU 数据；读取这些数据需要兼容 OBD2 适配器或车厂授权接口。");
+        report.append("\n报告由用户主动导出或分享，不会由本 APP 自动联网上传。\n");
         return report.toString();
     }
 
     private void saveReportFile() {
-        if (Build.VERSION.SDK_INT >= 19) {
-            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("text/plain");
-            intent.putExtra(Intent.EXTRA_TITLE, "HondaCarMonitor-检测报告-"
-                    + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date()) + ".txt");
-            try { startActivityForResult(intent, REQUEST_SAVE_REPORT); }
-            catch (Exception error) { shareReport(); }
-        } else {
-            shareReport();
+        if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT < 29
+                && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_STORAGE);
+            return;
+        }
+        writeReportToDownloads();
+    }
+
+    private void writeReportToDownloads() {
+        String fileName = "HondaCarMonitor-检测报告-"
+                + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date()) + ".txt";
+        OutputStream output = null;
+        try {
+            if (Build.VERSION.SDK_INT >= 29) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                        Environment.DIRECTORY_DOWNLOADS + "/HondaCarMonitor");
+                Uri uri = getContentResolver().insert(
+                        MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                if (uri == null) throw new Exception("无法在下载目录创建文件");
+                output = getContentResolver().openOutputStream(uri);
+            } else {
+                File downloads = Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOWNLOADS);
+                if (!downloads.exists() && !downloads.mkdirs())
+                    throw new Exception("无法创建 Download 目录");
+                File folder = new File(downloads, "HondaCarMonitor");
+                if (!folder.exists() && !folder.mkdirs())
+                    throw new Exception("无法创建 HondaCarMonitor 目录");
+                File reportFile = new File(folder, fileName);
+                output = new FileOutputStream(reportFile);
+            }
+            if (output == null) throw new Exception("无法打开报告文件");
+            output.write(createReport().getBytes("UTF-8"));
+            output.flush();
+            Toast.makeText(this, "报告已保存到 Download/HondaCarMonitor", Toast.LENGTH_LONG).show();
+            item("报告导出状态", "成功：Download/HondaCarMonitor/" + fileName);
+        } catch (Exception error) {
+            Toast.makeText(this, "报告保存失败：" + safe(error.getMessage()), Toast.LENGTH_LONG).show();
+            item("报告导出状态", "保存失败：" + safe(error.getMessage()));
+        } finally {
+            try { if (output != null) output.close(); } catch (Exception ignored) { }
         }
     }
 
@@ -321,27 +362,21 @@ public class MainActivity extends Activity {
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, "本田车机检测报告");
         intent.putExtra(Intent.EXTRA_TEXT, createReport());
-        try { startActivity(Intent.createChooser(intent, "导出或分享检测报告")); }
-        catch (Exception ignored) { }
+        try {
+            startActivity(Intent.createChooser(intent, "分享检测报告"));
+        } catch (Exception error) {
+            Toast.makeText(this, "车机没有可用的分享应用；请使用“导出 TXT 报告”", Toast.LENGTH_LONG).show();
+        }
     }
 
-    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_SAVE_REPORT && resultCode == RESULT_OK && data != null) {
-            Uri uri = data.getData();
-            if (uri == null) return;
-            OutputStream output = null;
-            try {
-                output = getContentResolver().openOutputStream(uri);
-                if (output != null) {
-                    output.write(createReport().getBytes("UTF-8"));
-                    output.flush();
-                    item("报告导出状态", "已保存 TXT 检测报告");
-                }
-            } catch (Exception error) {
-                item("报告导出状态", "保存失败：" + safe(error.getMessage()));
-            } finally {
-                try { if (output != null) output.close(); } catch (Exception ignored) { }
+    @Override public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                                       int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_WRITE_STORAGE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                writeReportToDownloads();
+            } else {
+                Toast.makeText(this, "未获得存储权限，无法写入公共下载目录", Toast.LENGTH_LONG).show();
             }
         }
     }
