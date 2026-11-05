@@ -1,25 +1,338 @@
 package com.honda.carmonitor;
-import android.app.*; import android.os.*; import android.view.*; import android.widget.*; import android.graphics.*; import android.util.*; import java.io.*; import java.util.*;
+
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.StatFs;
+import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public class MainActivity extends Activity {
- LinearLayout list; int fg=Color.WHITE; int muted=Color.rgb(170,185,200);
- public void onCreate(Bundle b){super.onCreate(b); getWindow().getDecorView().setSystemUiVisibility(5894|1024|512);
- LinearLayout root=new LinearLayout(this); root.setOrientation(1); root.setPadding(22,16,22,16); root.setBackgroundColor(Color.rgb(13,20,31));
- TextView title=new TextView(this); title.setText("HONDA CAR MONITOR  |  本田车机监控"); title.setTextColor(fg); title.setTextSize(23); title.setTypeface(null,1); root.addView(title);
- TextView intro=new TextView(this); intro.setText("第一阶段：系统版本与 ROOT 权限检测（本机只读）"); intro.setTextColor(muted); intro.setTextSize(14); root.addView(intro);
- Button refresh=new Button(this); refresh.setText("重新检测"); root.addView(refresh);
- ScrollView sc=new ScrollView(this); list=new LinearLayout(this); list.setOrientation(1); sc.addView(list); root.addView(sc,new LinearLayout.LayoutParams(-1,0,1)); setContentView(root);
- refresh.setOnClickListener(v->detect()); detect(); }
- void section(String s){TextView t=new TextView(this);t.setText(s);t.setTextColor(Color.rgb(60,185,255));t.setTextSize(18);t.setTypeface(null,1);t.setPadding(0,18,0,6);list.addView(t);}
- void item(String k,String v){LinearLayout box=new LinearLayout(this);box.setOrientation(1);box.setPadding(12,8,12,8);box.setBackgroundColor(Color.rgb(27,38,53));TextView a=new TextView(this);a.setText(k);a.setTextColor(muted);a.setTextSize(13);TextView z=new TextView(this);z.setText(v);z.setTextColor(fg);z.setTextSize(17);box.addView(a);box.addView(z);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=6;list.addView(box,p);}
- String s(String x){return x==null||x.length()==0?"未知":x;}
- String rootCheck(){boolean clue=new File("/system/bin/su").exists()||new File("/system/xbin/su").exists()||new File("/sbin/su").exists()||(Build.TAGS!=null&&Build.TAGS.contains("test-keys"));
- try{Process p=Runtime.getRuntime().exec(new String[]{"su","-c","id"}); final StringBuilder out=new StringBuilder(); BufferedReader r=new BufferedReader(new InputStreamReader(p.getInputStream())); Thread t=new Thread(()->{try{String l;while((l=r.readLine())!=null)synchronized(out){out.append(l);}}catch(Exception e){}});t.setDaemon(true);t.start();t.join(3000);if(t.isAlive()){p.destroy();return "未能确认：Root 请求超时"+(clue?"（发现 Root 线索）":"");}p.waitFor();String v=out.toString();if(v.contains("uid=0"))return "已获取 Root 权限（su 验证 uid=0）";if(v.length()>0)return "未获取 Root 权限（su 返回："+v+"）";return "未能确认 Root"+(clue?"（发现 Root 相关线索）":"");}catch(Exception e){return clue?"发现 Root 相关文件/标记，但未验证到授权权限":"未检测到可用 su，Root 未确认";}}
- void detect(){list.removeAllViews();section("ROOT 权限状态");String rs=rootCheck();item("检测结果",rs);item("检测方式","执行 su -c id 验证 UID。若出现 Root 授权弹窗，请允许；拒绝或超时不会误报为已 Root。");
- section("Android 系统版本");item("Android 版本",s(Build.VERSION.RELEASE));item("API Level",Build.VERSION.SDK_INT+"");item("安全补丁",Build.VERSION.SDK_INT>=23?s(Build.VERSION.SECURITY_PATCH):"系统版本不提供");item("系统构建版本",s(Build.DISPLAY));item("Build 指纹",s(Build.FINGERPRINT));item("Build 标签",s(Build.TAGS));
- section("车机硬件信息");item("设备型号",s(Build.MODEL));item("品牌 / 制造商",s(Build.BRAND)+" / "+s(Build.MANUFACTURER));item("设备代号",s(Build.DEVICE));item("主板",s(Build.BOARD));item("硬件平台",s(Build.HARDWARE));item("产品",s(Build.PRODUCT));
- DisplayMetrics d=new DisplayMetrics();getWindowManager().getDefaultDisplay().getRealMetrics(d);section("屏幕信息");item("分辨率",d.widthPixels+" × "+d.heightPixels);item("密度",d.densityDpi+" dpi");
- ActivityManager.MemoryInfo m=new ActivityManager.MemoryInfo();((ActivityManager)getSystemService(ACTIVITY_SERVICE)).getMemoryInfo(m);section("内存信息");item("RAM 总量",gb(m.totalMem));item("RAM 可用",gb(m.availMem));
- try{StatFs f=new StatFs(Environment.getDataDirectory().getPath());long total=(long)f.getBlockCount()*f.getBlockSize(),free=(long)f.getAvailableBlocks()*f.getBlockSize();section("存储信息");item("内部存储总量",gb(total));item("可用空间",gb(free));}catch(Exception e){item("存储信息","读取失败");}
- section("说明");item("本阶段范围","只检测车机 Android 系统和硬件，不需要 OBD2。不会读取车辆 ECU 数据、不会联网上传、不会修改系统。");}
- String gb(long n){return String.format(Locale.US,"%.2f GB",n/1073741824.0);}
+    private LinearLayout list;
+    private final int fg = Color.WHITE;
+    private final int muted = Color.rgb(170, 185, 200);
+    private TextView cpuLive;
+    private long previousIdle = -1;
+    private long previousTotal = -1;
+
+    @Override public void onCreate(Bundle state) {
+        super.onCreate(state);
+        getWindow().getDecorView().setSystemUiVisibility(5894 | 1024 | 512);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(22, 16, 22, 16);
+        root.setBackgroundColor(Color.rgb(13, 20, 31));
+
+        TextView title = new TextView(this);
+        title.setText("HONDA CAR MONITOR  |  本田车机监控");
+        title.setTextColor(fg);
+        title.setTextSize(23);
+        title.setTypeface(null, 1);
+        root.addView(title);
+
+        TextView intro = new TextView(this);
+        intro.setText("车机系统检测 · CPU 监控 · 兼容性报告（本机只读）");
+        intro.setTextColor(muted);
+        intro.setTextSize(14);
+        root.addView(intro);
+
+        Button refresh = new Button(this);
+        refresh.setText("重新检测全部项目");
+        root.addView(refresh);
+
+        ScrollView scroller = new ScrollView(this);
+        list = new LinearLayout(this);
+        list.setOrientation(LinearLayout.VERTICAL);
+        scroller.addView(list);
+        root.addView(scroller, new LinearLayout.LayoutParams(-1, 0, 1));
+        setContentView(root);
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) { detectAll(); }
+        });
+        detectAll();
+    }
+
+    private void section(String value) {
+        TextView label = new TextView(this);
+        label.setText(value);
+        label.setTextColor(Color.rgb(60, 185, 255));
+        label.setTextSize(18);
+        label.setTypeface(null, 1);
+        label.setPadding(0, 18, 0, 6);
+        list.addView(label);
+    }
+
+    private void item(String key, String value) {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(12, 8, 12, 8);
+        card.setBackgroundColor(Color.rgb(27, 38, 53));
+        TextView k = new TextView(this);
+        k.setText(key);
+        k.setTextColor(muted);
+        k.setTextSize(13);
+        TextView v = new TextView(this);
+        v.setText(value);
+        v.setTextColor(fg);
+        v.setTextSize(16);
+        card.addView(k);
+        card.addView(v);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
+        params.bottomMargin = 6;
+        list.addView(card, params);
+    }
+
+    private String safe(String value) {
+        return value == null || value.length() == 0 ? "未知" : value;
+    }
+
+    private String rootCheck() {
+        boolean clue = new File("/system/bin/su").exists()
+                || new File("/system/xbin/su").exists()
+                || new File("/sbin/su").exists()
+                || (Build.TAGS != null && Build.TAGS.contains("test-keys"));
+        try {
+            Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", "id"});
+            final StringBuilder output = new StringBuilder();
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            Thread readerThread = new Thread(new Runnable() {
+                @Override public void run() {
+                    try {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            synchronized (output) { output.append(line); }
+                        }
+                    } catch (Exception ignored) { }
+                }
+            });
+            readerThread.setDaemon(true);
+            readerThread.start();
+            readerThread.join(2500);
+            if (readerThread.isAlive()) {
+                process.destroy();
+                return "未能确认：Root 请求超时" + (clue ? "（发现 Root 线索）" : "");
+            }
+            process.waitFor();
+            String result = output.toString();
+            if (result.contains("uid=0")) return "已获取 Root（su 验证 uid=0）";
+            if (result.length() > 0) return "未获取 Root（su 返回：" + result + "）";
+            return "未能确认 Root" + (clue ? "（发现 Root 相关线索）" : "");
+        } catch (Exception error) {
+            return clue ? "发现 Root 相关文件/标记，但未验证到授权权限" : "未检测到可用 su，Root 未确认";
+        }
+    }
+
+    private String readFirstLine(String path) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path));
+            String value = reader.readLine();
+            reader.close();
+            return value == null ? "" : value.trim();
+        } catch (Exception ignored) { return ""; }
+    }
+
+    private String cpuModel() {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader("/proc/cpuinfo"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String lower = line.toLowerCase(Locale.US);
+                if (lower.startsWith("model name") || lower.startsWith("hardware")
+                        || lower.startsWith("processor") || lower.startsWith("cpu model")) {
+                    String[] parts = line.split(":", 2);
+                    if (parts.length == 2 && parts[1].trim().length() > 0) return parts[1].trim();
+                }
+            }
+        } catch (Exception ignored) {
+        } finally {
+            try { if (reader != null) reader.close(); } catch (Exception ignored) { }
+        }
+        return safe(Build.HARDWARE);
+    }
+
+    private int cpuCores() {
+        int count = 0;
+        File cpu = new File("/sys/devices/system/cpu/");
+        File[] files = cpu.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.getName().matches("cpu[0-9]+")) count++;
+            }
+        }
+        return count > 0 ? count : Runtime.getRuntime().availableProcessors();
+    }
+
+    private String cpuFrequency() {
+        String max = readFirstLine("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
+        String current = readFirstLine("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq");
+        if (max.length() == 0) max = readFirstLine("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
+        return "当前 " + (current.length() == 0 ? "不可读取" : mhz(current))
+                + " / 最高 " + (max.length() == 0 ? "不可读取" : mhz(max));
+    }
+
+    private String mhz(String khz) {
+        try { return String.format(Locale.US, "%.0f MHz", Long.parseLong(khz) / 1000.0); }
+        catch (Exception ignored) { return khz; }
+    }
+
+    private long[] cpuTimes() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("/proc/stat"));
+            String line = reader.readLine();
+            reader.close();
+            if (line == null || !line.startsWith("cpu ")) return null;
+            String[] values = line.trim().split("\\s+");
+            long total = 0;
+            for (int i = 1; i < values.length; i++) total += Long.parseLong(values[i]);
+            long idle = Long.parseLong(values[4]);
+            if (values.length > 5) idle += Long.parseLong(values[5]);
+            return new long[]{total, idle};
+        } catch (Exception ignored) { return null; }
+    }
+
+    private void sampleCpuUsage(final TextView target) {
+        target.setText("正在采样 CPU 负载…");
+        new Thread(new Runnable() {
+            @Override public void run() {
+                final long[] first = cpuTimes();
+                try { Thread.sleep(700); } catch (InterruptedException ignored) { }
+                final long[] second = cpuTimes();
+                final String result;
+                if (first == null || second == null || second[0] <= first[0]) {
+                    result = "当前系统不允许读取 /proc/stat";
+                } else {
+                    long total = second[0] - first[0];
+                    long idle = second[1] - first[1];
+                    result = String.format(Locale.US, "%.1f%%（约 0.7 秒采样）",
+                            Math.max(0, Math.min(100, (total - idle) * 100.0 / total)));
+                }
+                runOnUiThread(new Runnable() {
+                    @Override public void run() { target.setText(result); }
+                });
+            }
+        }, "cpu-sampler").start();
+    }
+
+    private String abiList() {
+        if (Build.VERSION.SDK_INT >= 21 && Build.SUPPORTED_ABIS != null) {
+            StringBuilder result = new StringBuilder();
+            for (String abi : Build.SUPPORTED_ABIS) {
+                if (result.length() > 0) result.append(", ");
+                result.append(abi);
+            }
+            return result.toString();
+        }
+        return safe(Build.CPU_ABI) + (Build.CPU_ABI2 == null ? "" : ", " + Build.CPU_ABI2);
+    }
+
+    private String gb(long bytes) {
+        return String.format(Locale.US, "%.2f GB", bytes / 1073741824.0);
+    }
+
+    private void detectAll() {
+        list.removeAllViews();
+
+        section("一、ROOT 权限状态");
+        item("检测结果", rootCheck());
+        item("检测说明", "通过 su -c id 验证 UID。若车机出现 Root 授权弹窗，请按实际需要处理；超时或拒绝不等于已 Root。");
+
+        section("二、Android 系统版本");
+        item("Android 版本", safe(Build.VERSION.RELEASE));
+        item("API Level", String.valueOf(Build.VERSION.SDK_INT));
+        item("安全补丁", Build.VERSION.SDK_INT >= 23 ? safe(Build.VERSION.SECURITY_PATCH) : "系统版本不提供");
+        item("系统构建", safe(Build.DISPLAY));
+        item("Build 指纹", safe(Build.FINGERPRINT));
+        item("Build 标签", safe(Build.TAGS));
+
+        section("三、CPU 信息与实时负载");
+        item("CPU 型号 / 硬件", cpuModel());
+        item("CPU 核心数", String.valueOf(cpuCores()) + " 核");
+        item("CPU ABI 架构", abiList());
+        item("CPU 频率", cpuFrequency());
+        cpuLive = new TextView(this);
+        cpuLive.setTextColor(fg);
+        cpuLive.setTextSize(17);
+        cpuLive.setPadding(12, 10, 12, 10);
+        cpuLive.setBackgroundColor(Color.rgb(27, 38, 53));
+        list.addView(cpuLive);
+        sampleCpuUsage(cpuLive);
+
+        section("四、车机硬件信息");
+        item("设备型号", safe(Build.MODEL));
+        item("品牌 / 制造商", safe(Build.BRAND) + " / " + safe(Build.MANUFACTURER));
+        item("设备代号", safe(Build.DEVICE));
+        item("主板", safe(Build.BOARD));
+        item("硬件平台", safe(Build.HARDWARE));
+        item("产品代号", safe(Build.PRODUCT));
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        display.getRealMetrics(metrics);
+        section("五、屏幕与内存");
+        item("屏幕分辨率", metrics.widthPixels + " × " + metrics.heightPixels);
+        item("屏幕密度", metrics.densityDpi + " dpi");
+        ActivityManager.MemoryInfo memory = new ActivityManager.MemoryInfo();
+        ((ActivityManager) getSystemService(ACTIVITY_SERVICE)).getMemoryInfo(memory);
+        item("RAM 总量 / 可用", gb(memory.totalMem) + " / " + gb(memory.availMem));
+
+        long totalStorage = 0;
+        long freeStorage = 0;
+        try {
+            StatFs stats = new StatFs(Environment.getDataDirectory().getPath());
+            totalStorage = (long) stats.getBlockCount() * stats.getBlockSize();
+            freeStorage = (long) stats.getAvailableBlocks() * stats.getBlockSize();
+        } catch (Exception ignored) { }
+        item("内部存储总量 / 可用", gb(totalStorage) + " / " + gb(freeStorage));
+
+        section("六、硬件与系统兼容性报告");
+        List<String> checks = new ArrayList<String>();
+        int passed = 0;
+        int warnings = 0;
+        if (Build.VERSION.SDK_INT >= 17) { checks.add("通过：Android API 17+，满足本 APP 最低系统要求"); passed++; }
+        else { checks.add("不通过：Android 版本低于 API 17"); warnings++; }
+        if (Build.VERSION.SDK_INT >= 21 && Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0) {
+            checks.add("通过：系统可报告 CPU ABI（" + abiList() + "）"); passed++;
+        } else {
+            checks.add("提示：旧版 Android，使用传统 CPU ABI 字段"); passed++;
+        }
+        if (metrics.widthPixels >= metrics.heightPixels) { checks.add("通过：当前屏幕为横向布局"); passed++; }
+        else { checks.add("注意：屏幕当前为竖向，车机横屏显示效果需实机确认"); warnings++; }
+        if (memory.totalMem >= 1024L * 1024L * 1024L) { checks.add("通过：RAM 至少 1 GB"); passed++; }
+        else { checks.add("注意：RAM 少于 1 GB，运行大型应用可能受限"); warnings++; }
+        if (freeStorage >= 512L * 1024L * 1024L) { checks.add("通过：内部可用空间至少 512 MB"); passed++; }
+        else { checks.add("注意：内部可用空间不足 512 MB 或无法读取"); warnings++; }
+        PackageManager pm = getPackageManager();
+        checks.add((pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN) ? "通过" : "提示")
+                + "：触摸屏 " + (pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN) ? "可用" : "未报告"));
+        checks.add((pm.hasSystemFeature(PackageManager.FEATURE_WIFI) ? "通过" : "提示")
+                + "：Wi-Fi " + (pm.hasSystemFeature(PackageManager.FEATURE_WIFI) ? "可用" : "未报告"));
+        for (int i = 0; i < checks.size(); i++) item("检测项 " + (i + 1), checks.get(i));
+        String verdict = warnings == 0 ? "基础兼容性良好（仍需实机安装验证）"
+                : "发现 " + warnings + " 项注意事项（不代表 APP 一定无法安装）";
+        item("兼容性结论", verdict);
+        item("通过项", passed + " 项；注意项 " + warnings + " 项");
+
+        section("七、检测范围说明");
+        item("本 APP 能读取", "Android 系统版本、CPU、内存、存储、屏幕、设备标识和部分系统能力。");
+        item("本 APP 暂不能读取", "发动机转速、车速、水温、故障码等 ECU 数据；这些需要兼容的 OBD2 适配器或车厂授权车辆接口。");
+        item("隐私与安全", "本地只读检测，不联网、不上传、不修改系统分区，不执行车辆控制操作。");
+    }
 }
