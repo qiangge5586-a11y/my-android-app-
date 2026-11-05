@@ -3,6 +3,11 @@ package com.honda.carmonitor;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.net.Uri;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +36,7 @@ public class MainActivity extends Activity {
     private TextView cpuLive;
     private long previousIdle = -1;
     private long previousTotal = -1;
+    private static final int REQUEST_SAVE_REPORT = 7301;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -56,6 +62,21 @@ public class MainActivity extends Activity {
         Button refresh = new Button(this);
         refresh.setText("重新检测全部项目");
         root.addView(refresh);
+        LinearLayout exportBar = new LinearLayout(this);
+        exportBar.setOrientation(LinearLayout.HORIZONTAL);
+        Button saveReport = new Button(this);
+        saveReport.setText("导出 TXT 报告");
+        Button shareReport = new Button(this);
+        shareReport.setText("分享检测报告");
+        exportBar.addView(saveReport, new LinearLayout.LayoutParams(0, -2, 1));
+        exportBar.addView(shareReport, new LinearLayout.LayoutParams(0, -2, 1));
+        root.addView(exportBar);
+        saveReport.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) { saveReportFile(); }
+        });
+        shareReport.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) { shareReport(); }
+        });
 
         ScrollView scroller = new ScrollView(this);
         list = new LinearLayout(this);
@@ -245,6 +266,84 @@ public class MainActivity extends Activity {
 
     private String gb(long bytes) {
         return String.format(Locale.US, "%.2f GB", bytes / 1073741824.0);
+    }
+
+
+    private String collectText(View view) {
+        if (view instanceof TextView) {
+            CharSequence value = ((TextView) view).getText();
+            return value == null ? "" : value.toString();
+        }
+        StringBuilder result = new StringBuilder();
+        if (view instanceof LinearLayout) {
+            LinearLayout group = (LinearLayout) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                String child = collectText(group.getChildAt(i));
+                if (child.length() > 0) {
+                    if (result.length() > 0) result.append("\\n");
+                    result.append(child);
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private String createReport() {
+        StringBuilder report = new StringBuilder();
+        String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date());
+        report.append("HONDA CAR MONITOR - 本田车机检测报告\\n");
+        report.append("报告生成时间：").append(time).append("\\n");
+        report.append("应用版本：0.4.0\\n========================================\\n");
+        report.append(collectText(list));
+        report.append("\\n========================================\\n");
+        report.append("说明：本报告来自 Android 本机只读检测，结果受系统权限和厂商接口限制。");
+        report.append("\\n不包含发动机转速、车速、水温、故障码等 ECU 数据；读取这些数据需要兼容 OBD2 适配器或车厂授权接口。");
+        report.append("\\n报告由用户主动导出或分享，不会由本 APP 自动联网上传。\\n");
+        return report.toString();
+    }
+
+    private void saveReportFile() {
+        if (Build.VERSION.SDK_INT >= 19) {
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TITLE, "HondaCarMonitor-检测报告-"
+                    + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date()) + ".txt");
+            try { startActivityForResult(intent, REQUEST_SAVE_REPORT); }
+            catch (Exception error) { shareReport(); }
+        } else {
+            shareReport();
+        }
+    }
+
+    private void shareReport() {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "本田车机检测报告");
+        intent.putExtra(Intent.EXTRA_TEXT, createReport());
+        try { startActivity(Intent.createChooser(intent, "导出或分享检测报告")); }
+        catch (Exception ignored) { }
+    }
+
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_SAVE_REPORT && resultCode == RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            if (uri == null) return;
+            OutputStream output = null;
+            try {
+                output = getContentResolver().openOutputStream(uri);
+                if (output != null) {
+                    output.write(createReport().getBytes("UTF-8"));
+                    output.flush();
+                    item("报告导出状态", "已保存 TXT 检测报告");
+                }
+            } catch (Exception error) {
+                item("报告导出状态", "保存失败：" + safe(error.getMessage()));
+            } finally {
+                try { if (output != null) output.close(); } catch (Exception ignored) { }
+            }
+        }
     }
 
     private void detectAll() {
