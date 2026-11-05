@@ -1,4 +1,4 @@
-name: Build compatibility checker APK
+name: Build Android APKs
 on:
   push:
     branches: [ main ]
@@ -10,7 +10,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -21,21 +20,14 @@ jobs:
         with:
           packages: platform-tools
           accept-android-sdk-licenses: true
-      - name: Install Android SDK
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Verify toolchain
-        run: |
-          java -version
-          gradle --version
-      - name: Build debug APK
-        run: gradle --no-daemon --stacktrace clean assembleDebug
-      - name: Verify APK output
-        run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - run: gradle --no-daemon clean :app:assembleDebug :hondamonitor:assembleDebug
+      - run: test -s hondamonitor/build/outputs/apk/debug/hondamonitor-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: HeadUnitHotspotCheck-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: Honda-Car-Monitor-Chinese-debug
+          path: hondamonitor/build/outputs/apk/debug/hondamonitor-debug.apk
           if-no-files-found: error
